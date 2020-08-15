@@ -1,0 +1,3 @@
+#  SoftPLC ToDo
+
+- [ ] add counters
