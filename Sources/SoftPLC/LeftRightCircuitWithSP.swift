@@ -8,9 +8,9 @@
 
 import Foundation
 
-class LeftRightCircuitWithSP:LeftRightCircuit{
+public class LeftRightCircuitWithSP:LeftRightCircuit{
     
-    public var travelDuration:Int
+    public var travelDuration:Int = 0
     private var secondsTimer:Timer!
     
     public var setPoint:Float = 0.0{

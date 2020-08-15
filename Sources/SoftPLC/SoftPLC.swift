@@ -9,35 +9,44 @@
 import Foundation
 import ModbusDriver
 
-class VirtualPLC{
-    
-    protocol Module {
-    }
+public protocol PLCDriver {
+    func readAllInputs()
+    func writeAllOutputs()
+}
 
-    protocol Driver {
-        func readAllInputs()
-        func writeAllOutputs()
-    }
-    typealias IOList = [[[String]]]
+@available(OSX 10.12, *)
+public protocol drivenIOmodule:IOmodule{
+    var driver:PLCDriver{get}
+}
+
+
+@available(OSX 10.12, *)
+open class SoftPLC{
+    public typealias IOList = [[[String?]]]
+    public typealias HardwareConfiguration = [IOmodule]
     
-    internal var ioModules:[PLC.Module] = []
-    internal var ioDrivers:[PLC.Driver] = []
+    internal var hardwareConfig:HardwareConfiguration = []
+    internal var ioDrivers:[PLCDriver] = []
     
-    public var variableList:[PLCVariable] = []
+    internal var variableList:[String:PLCVariable] = [:]
     
-   
-    
-    init(withIOmodules ioModules:[PLCModule] ioList:IOList){
-        self.ioModules = ioModules
+    public init(hardwareConfig:HardwareConfiguration, ioList:IOList){
+        self.hardwareConfig = hardwareConfig
+        if let drivenIOmodules = hardwareConfig as? [drivenIOmodule]{
+            drivenIOmodules.forEach{
+                ioDrivers.append($0.driver)
+            }
+        }
+        self.importIO(list: ioList)
     }
     
     let plcCycle = DispatchQueue(label: "oneclick.virtualplc.cycle")
     
-    func stop(){
+    open func stop(){
         
     }
     
-    func run() {
+    open func run() {
         
         plcCycle.async {
             self.ioDrivers.forEach{$0.readAllInputs()}
@@ -51,18 +60,25 @@ class VirtualPLC{
         
     }
     
-    func main(){
+    open func main(){
         
     }
     
-    internal func import(ioList:IOList){
-//        ioList.forEach(<#T##body: ([[String]]) throws -> Void##([[String]]) throws -> Void#>)
+    internal func importIO(list:IOList){
+        for (rackIndex, rack) in list.enumerated() {
+            for (moduleIndex, module) in rack.enumerated() {
+                for (channelIndex, channel) in module.enumerated(){
+                    
+                    let ioSymbol = channel ?? ""
+                    let ioAddress:[Int] = [rackIndex, moduleIndex,  channelIndex]
+                    let ioVariable = PLCVariable(address: ioAddress, symbol: ioSymbol, description: ioSymbol)
+                    variableList[ioSymbol] = ioVariable
+                    
+                }
+            }
+        }
     }
-    
-    internal func lookup(Symbol:String)->PLCVariable{
-        
-    }
-    
+
     
 }
 

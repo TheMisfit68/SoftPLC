@@ -7,9 +7,9 @@
 
 import Foundation
 
-struct PLCAddress{
+internal struct PLCVariable{
     
-    var address:[[[Int8]]]
+    var address:[Int] // IO-variables wil recieve 3 entries, Racknumber, Modulenumber and Channelnumber
     var symbol:String
     var description:String
     

@@ -8,7 +8,7 @@
 
 import Foundation
 
-class LeftRightCircuit{
+public class LeftRightCircuit{
     
     enum Status:Int{
         case stop

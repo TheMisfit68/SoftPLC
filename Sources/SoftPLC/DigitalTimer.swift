@@ -8,7 +8,8 @@
 
 import Foundation
 
-class DigitalTimer{
+@available(OSX 10.12, *)
+public class DigitalTimer{
     
     enum DelayType{
         case onDelay
