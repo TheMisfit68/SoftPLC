@@ -7,10 +7,11 @@
 
 import Foundation
 
-internal struct PLCVariable{
+@available(OSX 10.12, *)
+public struct PLCVariable{
     
-    var address:[Int] // IO-variables wil recieve 3 entries, Racknumber, Modulenumber and Channelnumber
-    var symbol:String
-    var description:String
+    public var address:[Int] // IO-variables wil recieve 3 entries, Racknumber, Modulenumber and Channelnumber
+    public var symbol:SoftPLC.Symbol
+    public var description:String
     
 }

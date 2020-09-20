@@ -1,5 +1,5 @@
 //
-//  LeftRightCicuit.swift
+//  LeftRight.swift
 //  HAPiNest
 //
 //  Created by Jan Verrept on 13/08/2020.
@@ -8,20 +8,25 @@
 
 import Foundation
 
-public class LeftRightCircuit{
+@available(OSX 10.12, *)
+open class LeftRight:PLCclass{
     
     enum Status:Int{
         case stop
         case left
         case right
     }
+     
     var status:Status = .stop
     private var lastDirection:Status = .stop
     
     public var endSwitchLeft:Bool? = nil
     public var endSwitchRight:Bool? = nil
+    public var isMovingLeft:Bool? = nil
+    public var isMovingRight:Bool? = nil
+    public var feedbackValue:Float? = nil
     
-    var left:Bool = false{
+    public var left:Bool = false{
         didSet{
             if left && !(endSwitchLeft ?? false){
                 status = .left
@@ -30,7 +35,7 @@ public class LeftRightCircuit{
         }
     }
     
-    var right:Bool = false{
+    public var right:Bool = false{
         didSet{
             if right && !(endSwitchRight ?? false){
                 status = .right
@@ -39,7 +44,7 @@ public class LeftRightCircuit{
         }
     }
     
-    var stop:Bool = false{
+    public var stop:Bool = false{
         didSet{
             if stop {
                 status = .stop
@@ -47,23 +52,7 @@ public class LeftRightCircuit{
         }
     }
     
-    // "Open" is equivalent to "Left"
-    var open:Bool = false{
-        didSet{
-            left = open
-        }
-    }
-    
-    // "Close" is equivalent to "Right"
-    var close:Bool = false{
-        didSet{
-            right = close
-        }
-    }
-    
-    
-    
-    var toggle:Bool = false{
+    public var toggle:Bool = false{
         didSet{
             let risingEdge = toggle && !oldValue
             if risingEdge{
@@ -85,21 +74,36 @@ public class LeftRightCircuit{
         }
     }
     
-    var outputLeft:Bool{
+    public var outputLeft:Bool{
         return status == .left
     }
     
-    var outputRight:Bool{
+    public var outputRight:Bool{
         return status == .right
     }
     
-    // "Open" is equivalent to "Left"
-    var outputOpen:Bool{
-        return outputLeft
+    private var pulseTimerLeft:DigitalTimer? = nil
+    public func pulsLeft(for pulsLength:TimeInterval)->Bool{
+        
+        if pulseTimerLeft == nil {
+            pulseTimerLeft =  DigitalTimer(type: .pulsLimition, time: pulsLength)
+        }
+        pulseTimerLeft!.input = outputLeft
+        let outputPuls = pulseTimerLeft!.output && !(endSwitchLeft ?? false)
+        return outputPuls
+        
     }
     
-    // "Close" is equivalent to "Right"
-    var outputClose:Bool{
-        return outputRight
+    private var pulseTimerRight:DigitalTimer? = nil
+    public func pulsRight(for pulsLength:TimeInterval)->Bool{
+        
+        if pulseTimerRight == nil {
+            pulseTimerRight =  DigitalTimer(type: .pulsLimition, time: pulsLength)
+        }
+        pulseTimerRight!.input = outputRight
+        let outputPuls = pulseTimerRight!.output && !(endSwitchRight ?? false)
+        return outputPuls
+        
     }
+
 }
