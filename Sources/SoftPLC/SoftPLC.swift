@@ -1,5 +1,5 @@
 //
-//  VirtualPLC.swift
+//  SoftPLC.swift
 //  HAPiNest
 //
 //  Created by Jan Verrept on 14/08/2020.
@@ -9,23 +9,36 @@
 import Foundation
 import ModbusDriver
 
+public enum Status{
+    case running
+    case stopped
+}
+
+public enum ExecutionType{
+    case normal
+    case simulated
+}
+
 public protocol PLCDriver {
     func readAllInputs()
     func writeAllOutputs()
 }
 
-@available(OSX 10.12, *)
 extension ModbusDriver:PLCDriver{}
 
-@available(OSX 10.12, *)
 public class SoftPLC{
+    
+    public var controlPanel:PLCView!
     
     public typealias Symbol = String
     public typealias IOList = [[[Symbol?]]]
-    public typealias HardwareConfiguration = [IOmodule]
+    public typealias rackNumber = Int
+    public typealias HardwareConfiguration = [rackNumber:[ModBusModule]]
     
-    public var hardwareConfig:HardwareConfiguration = []
+    public var hardwareConfig:HardwareConfiguration = [:]
     public var ioDrivers:[PLCDriver] = []
+    public var simulator:ModbusSimulator = ModbusSimulator()
+    public var executionType:ExecutionType = .simulated //TODO: - change to normal after testing
     
     public var variableList:[Symbol:PLCVariable] = [:]
     public var plcObjects:[Symbol:PLCclass] = [:]{
@@ -37,75 +50,98 @@ public class SoftPLC{
         }
     }
     
-    public enum Status{
-        case running
-        case stopped
-    }
-    public var status:Status = .stopped
     
-    private var runCycleTimer:Timer!
-    let plcCycle = DispatchQueue(label: "oneclick.virtualplc.cycle", qos: .userInitiated)
+    var plcBackgroundCycle:PLCBackgroundCycle! = nil
+    
+    public var status:Status{
+        return plcBackgroundCycle.status
+    }
+    
     
     public init(hardwareConfig:HardwareConfiguration, ioList:IOList){
+        
         self.hardwareConfig = hardwareConfig
         
-        // If a module has its own driver embedded,
-        // add it to the array of drivers
-        self.hardwareConfig.forEach{ ioModule in
+        
+        self.hardwareConfig.forEach{ rack, modules in
             
-            switch ioModule{
-            case is IOLogikE1200Series:
-                if let moxaModule = ioModule as? IOLogikE1200Series{
-                    ioDrivers.append(moxaModule.driver)
+            // If a module has its own driver embedded,
+            // add it to the array of drivers to execute
+            modules.forEach{ module in
+                switch module{
+                case is IOLogikE1200Series:
+                    if let moxaModule = module as? IOLogikE1200Series{
+                        ioDrivers.append(moxaModule.driver)
+                    }
+                default:
+                    break
                 }
-            default:
-                break
+                
             }
             
+            // Also add all modules to the simulator-driver for testing purposes
+            simulator.modbusModules = modules
         }
         
         self.importIO(list: ioList)
         
-        runCycleTimer = Timer.scheduledTimer(withTimeInterval: 0.3, repeats: true) {timer in
-            print("Timer Fires")
-            self.mainLoop()
-        }
-        runCycleTimer.tolerance = runCycleTimer.timeInterval/10.0 // Give the processor some slack with a 10% tolerance on the timeInterval
+        self.plcBackgroundCycle = PLCBackgroundCycle(timeInterval: 0.3, mainLoop:mainLoop)
+        
+        self.controlPanel = PLCView(plcBackGroundCyle: plcBackgroundCycle, togglePLCState: togglePLCState, toggleSimulator: toggleSimulator)
+        
     }
     
+    func togglePLCState(newState:Bool){
+        if newState{
+            run()
+        }else{
+            stop()
+        }
+    }
+    
+    func toggleSimulator(newState:Bool){
+        if newState{
+            executionType = .simulated
+        }else{
+            executionType = .normal
+        }
+    }
     
     // MARK: - Main PLC Cycle
-    internal func mainLoop(){
+    
+    func mainLoop()->Void{
         
-        plcCycle.async {
+        if executionType == .simulated{
+            self.simulator.readAllInputs()
+        }else{
             self.ioDrivers.forEach{$0.readAllInputs()}
         }
         
-        plcCycle.async {
-            if self.status == .running{
+        if self.status == .running{
+            
+            self.plcObjects.forEach { instanceName, object in
                 
-                self.plcObjects.forEach { instanceName, object in
-                    
-                    (object as? Parameterizable)?.assignInputParameters()
-                    
-                    (object as? Parameterizable)?.assignOutputParameters()
-                    
-                }
+                (object as? Parameterizable)?.assignInputParameters()
+                
+                (object as? Parameterizable)?.assignOutputParameters()
+                
             }
         }
         
-        plcCycle.async {
+        if executionType == .simulated{
+            self.simulator.writeAllOutputs()
+        }else{
             self.ioDrivers.forEach{$0.writeAllOutputs()}
         }
         
     }
     
     public func stop(){
-        status = .stopped
+        plcBackgroundCycle.stop()
     }
     
     public func run() {
-        status = .running
+        plcBackgroundCycle.run()
     }
     
     
@@ -128,10 +164,14 @@ public class SoftPLC{
     public func signal(ioSymbol:String)->IOsignal?{
         var ioSignal:IOsignal? = nil
         if let ioVariable:PLCVariable = variableList[ioSymbol]{
+            
+            let rackNumber = ioVariable.address[0]
             let moduleNr = ioVariable.address[1]
             let channelNumber = ioVariable.address[2]
-            let ioModule = hardwareConfig[moduleNr]
-            ioSignal = ioModule.channels[channelNumber]
+            
+            let ioRack = hardwareConfig[rackNumber]
+            let ioModule = ioRack?[moduleNr]
+            ioSignal = ioModule?.channels[channelNumber]
         }
         return ioSignal
     }

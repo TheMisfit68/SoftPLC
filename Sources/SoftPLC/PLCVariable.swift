@@ -7,7 +7,7 @@
 
 import Foundation
 
-@available(OSX 10.12, *)
+
 public struct PLCVariable{
     
     public var address:[Int] // IO-variables wil recieve 3 entries, Racknumber, Modulenumber and Channelnumber

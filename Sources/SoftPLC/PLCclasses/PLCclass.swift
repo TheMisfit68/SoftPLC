@@ -5,8 +5,7 @@
 //
 
 import Foundation
-
-@available(OSX 10.12, *)
+import JVCocoa
 
 public protocol Parameterizable{
     
@@ -15,7 +14,6 @@ public protocol Parameterizable{
     
 }
 
-@available(OSX 10.12, *)
 open class PLCclass{
     
     public var plc:SoftPLC! = nil

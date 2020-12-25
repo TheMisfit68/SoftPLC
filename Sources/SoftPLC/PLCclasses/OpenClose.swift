@@ -7,7 +7,7 @@
 
 import Foundation
 
-@available(OSX 10.12, *)
+
 open class OpenClose:LeftRight{
     
     // "Open" is fully equivalent to "Left"

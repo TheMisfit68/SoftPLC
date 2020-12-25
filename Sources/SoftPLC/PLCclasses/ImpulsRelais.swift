@@ -7,26 +7,23 @@
 
 import Foundation
 
-import Foundation
-
-@available(OSX 10.12, *)
 open class ImpulsRelais:StartStop{
     
+    private var edgeDetection:EBool = EBool()
+    
     public var toggle:Bool = false{
+        
         didSet{
-            let risingEdge = toggle && !oldValue
+                        
+            let risingEdge = edgeDetection.risingEdge(onBoolean: toggle)
+        
             if risingEdge{
-                
-                switch status{
-                case .started:
-                    status = .stopped
-                case .stopped:
-                    status = .started
-                    
-                }
+                output.toggle()
             }
+            
         }
+        
     }
     
-    
 }
+

@@ -7,50 +7,32 @@
 //
 
 import Foundation
+import JVCocoa
 
-@available(OSX 10.12, *)
 open class StartStop:PLCclass{
+    
+    public var output:Bool = false
+    public var feedbackValue:Bool? = nil
     
     enum Status{
         case started
         case stopped
     }
     
-    var status:Status = .stopped
+    var status:Status{
+        output ? .started : .stopped
+    }
     
     public var start:Bool = false{
         didSet{
-            if start {
-                status = .started
-            }
+            output.set()
         }
     }
     
     public var stop:Bool = false{
         didSet{
-            if stop {
-                status = .stopped
-            }
+            output.reset()
         }
-    }
-    
-    public var feedbackValue:Bool? = nil
-    
-    public var output:Bool{
-        return (status == .started)
-    }
-    
-    private var pulseTimer:DigitalTimer! = nil
-    public func puls(for pulsLength:TimeInterval)->Bool{
-        
-        if pulseTimer == nil {
-            pulseTimer =  DigitalTimer(type: .pulsLimition, time: pulsLength)
-        }
-        pulseTimer.input = output
-        
-        let outputPuls = pulseTimer.output && !(feedbackValue ?? false)
-        return outputPuls
-        
     }
     
 }

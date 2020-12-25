@@ -8,7 +8,7 @@
 
 import Foundation
 
-@available(OSX 10.12, *)
+
 open class LeftRight:PLCclass{
     
     enum Status:Int{

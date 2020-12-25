@@ -8,18 +8,17 @@
 
 import Foundation
 
-@available(OSX 10.12, *)
 open class DigitalTimer:PLCclass{
     
-    enum DelayType{
+    public enum DelayType{
         case onDelay
         case offDelay
         case pulsLimition
         case exactPuls
     }
     
-    let delayType:DelayType
-    let timeValue:TimeInterval
+    private let delayType:DelayType
+    public let timeValue:TimeInterval
     
     public var input:Bool = false{
         didSet{
@@ -60,7 +59,7 @@ open class DigitalTimer:PLCclass{
     
     public var output:Bool = false
     
-    init(type:DelayType = .onDelay, time:TimeInterval){
+    public init(type:DelayType = .onDelay, time:TimeInterval){
         self.delayType = type
         self.timeValue = time
     }
