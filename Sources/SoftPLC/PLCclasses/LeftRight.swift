@@ -81,29 +81,5 @@ open class LeftRight:PLCclass{
     public var outputRight:Bool{
         return status == .right
     }
-    
-    private var pulseTimerLeft:DigitalTimer? = nil
-    public func pulsLeft(for pulsLength:TimeInterval)->Bool{
-        
-        if pulseTimerLeft == nil {
-            pulseTimerLeft =  DigitalTimer(type: .pulsLimition, time: pulsLength)
-        }
-        pulseTimerLeft!.input = outputLeft
-        let outputPuls = pulseTimerLeft!.output && !(endSwitchLeft ?? false)
-        return outputPuls
-        
-    }
-    
-    private var pulseTimerRight:DigitalTimer? = nil
-    public func pulsRight(for pulsLength:TimeInterval)->Bool{
-        
-        if pulseTimerRight == nil {
-            pulseTimerRight =  DigitalTimer(type: .pulsLimition, time: pulsLength)
-        }
-        pulseTimerRight!.input = outputRight
-        let outputPuls = pulseTimerRight!.output && !(endSwitchRight ?? false)
-        return outputPuls
-        
-    }
 
 }

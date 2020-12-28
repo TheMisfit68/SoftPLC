@@ -57,13 +57,4 @@ open class OpenClose:LeftRight{
         return super.outputRight
     }
     
-    public func pulsOpen(for pulsLength:TimeInterval)->Bool{
-        return super.pulsLeft(for: pulsLength)
-    }
-    
-    public func pulsClose(for pulsLength:TimeInterval)->Bool{
-        return super.pulsRight(for: pulsLength)
-    }
-
-    
 }
