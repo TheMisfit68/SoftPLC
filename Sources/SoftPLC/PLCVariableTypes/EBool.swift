@@ -7,10 +7,12 @@
 
 import Foundation
 
+public typealias EdgeDetection = EBool
+
 public struct EBool{
     
     private var previsousValue:Bool = false
-    
+
     public init(){}
     
     public mutating func risingEdge(onBoolean boolean: Bool)->Bool{

@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  Bool.swift
 //  
 //
 //  Created by Jan Verrept on 24/12/2020.
