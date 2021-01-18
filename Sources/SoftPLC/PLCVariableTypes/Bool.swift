@@ -18,10 +18,14 @@ public extension Bool {
         self = false
     }
     
-    mutating func timed(using timer:DigitalTimer = DigitalTimer(type: DigitalTimer.DelayType.onDelay, time:1.0) ) -> Bool{
+    mutating func timed(using timer:DigitalTimer = DigitalTimer.OnDelay(time:1.0){} ) -> Bool{
         timer.input = self
         self = timer.output
         return self
+    }
+    
+    func test(){
+        
     }
     
 }

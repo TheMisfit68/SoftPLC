@@ -11,16 +11,22 @@ import JVCocoa
 
 open class StartStop:PLCclass{
     
-    public var output:Bool = false
+    public internal(set) var output:Bool = false
     public var feedbackValue:Bool? = nil
     
-    enum Status{
+    public enum Status{
         case started
         case stopped
     }
     
-    var status:Status{
-        output ? .started : .stopped
+    public var status:Status = .stopped{
+        didSet{
+            if status == .started{
+                output.set()
+            }else{
+                output.reset()
+            }
+        }
     }
     
     public var start:Bool = false{

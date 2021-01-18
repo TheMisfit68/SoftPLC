@@ -11,36 +11,36 @@ import Foundation
 
 open class OpenCloseWithSetpoint:OpenClose{
     
-    public var travelDuration:Int = 0
-    private var secondsTimer:Timer!
-    
-    public var setPoint:Float = 0.0{
-        didSet{
-            controlOutputs()
-        }
-    }
-    
-    override public var feedbackValue:Float?{
-        didSet{
-            if feedbackValue != nil{
-                controlOutputs()
-            }
-        }
-    }
-    
-    public var deadBand:Float = 0.2
-    
-    private func controlOutputs(){
-        if let feedbackValue = self.feedbackValue{
-            
-            if  (feedbackValue-setPoint) < (deadBand * -1.0){
-                open = true
-            }else if (feedbackValue-setPoint) > deadBand{
-                close = true
-            }
-            
-        }
-        
-    }
+//    public var travelDuration:Int = 0
+//    private var secondsTimer:Timer!
+//    
+//    public var setPoint:Float = 0.0{
+//        didSet{
+//            controlOutputs()
+//        }
+//    }
+//    
+//    override public var feedbackValue:Float?{
+//        didSet{
+//            if feedbackValue != nil{
+//                controlOutputs()
+//            }
+//        }
+//    }
+//    
+//    public var deadBand:Float = 0.2
+//    
+//    private func controlOutputs(){
+//        if let feedbackValue = self.feedbackValue{
+//            
+//            if  (feedbackValue-setPoint) < (deadBand * -1.0){
+//                open = true
+//            }else if (feedbackValue-setPoint) > deadBand{
+//                close = true
+//            }
+//            
+//        }
+//        
+//    }
     
 }

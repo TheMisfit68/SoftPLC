@@ -9,7 +9,7 @@ import Foundation
 
 open class ImpulsRelais:StartStop{
     
-    override init(){
+    public override init(){
         ebToggle = EBool(&toggle)
     }
     
