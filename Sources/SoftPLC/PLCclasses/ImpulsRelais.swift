@@ -9,15 +9,17 @@ import Foundation
 
 open class ImpulsRelais:StartStop{
     
-    private var edgeDetection:EBool = EBool()
+    override init(){
+        ebToggle = EBool(&toggle)
+    }
+    
+    var ebToggle:EBool
     
     public var toggle:Bool = false{
         
         didSet{
-                        
-            let risingEdge = edgeDetection.risingEdge(onBoolean: toggle)
-        
-            if risingEdge{
+ 
+            if ebToggle.🔼{
                 output.toggle()
             }
             
