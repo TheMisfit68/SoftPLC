@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  PLCclass.swift
 //
 //  Created by Jan Verrept on 16/08/2020.
 //
@@ -7,12 +7,7 @@
 import Foundation
 import JVCocoa
 
-public protocol Parameterizable{
-    
-    func assignInputParameters()
-    func assignOutputParameters()
-    
-}
+
 
 open class PLCclass{
     
@@ -20,5 +15,18 @@ open class PLCclass{
     public var instanceName:String = ""
     
     public init(){}
-            
+    
+}
+
+public protocol Parameterizable:PLCclass{
+    
+    func assignInputParameters()
+    func assignOutputParameters()
+    
+}
+
+public protocol Simulateable:PLCclass{
+    
+    func simulateHardwareFeedback()
+    
 }

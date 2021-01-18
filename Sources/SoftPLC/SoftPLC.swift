@@ -112,26 +112,48 @@ public class SoftPLC{
     func mainLoop()->Void{
         
         if executionType == .simulated{
-            self.simulator.readAllInputs()
-        }else{
-            self.ioDrivers.forEach{$0.readAllInputs()}
-        }
-        
-        if self.status == .running{
             
+            self.simulator.readAllInputs()
+            
+            #if DEBUG
+            // Overwrite PLC inputs with simulated data,
+            // before they get to be used as input parameters
             self.plcObjects.forEach { instanceName, object in
-                
-                (object as? Parameterizable)?.assignInputParameters()
-                
-                (object as? Parameterizable)?.assignOutputParameters()
-                
+                (object as? Simulateable)?.simulateHardwareFeedback()
             }
-        }
-        
-        if executionType == .simulated{
+            #endif
+            
+            
+            if self.status == .running{
+                
+                self.plcObjects.forEach { instanceName, object in
+                    
+                    (object as? Parameterizable)?.assignInputParameters()
+                    
+                    (object as? Parameterizable)?.assignOutputParameters()
+                    
+                }
+            }
+            
             self.simulator.writeAllOutputs()
+            
         }else{
+            
+            self.ioDrivers.forEach{$0.readAllInputs()}
+            
+            if self.status == .running{
+                
+                self.plcObjects.forEach { instanceName, object in
+                    
+                    (object as? Parameterizable)?.assignInputParameters()
+                    
+                    (object as? Parameterizable)?.assignOutputParameters()
+                    
+                }
+            }
+            
             self.ioDrivers.forEach{$0.writeAllOutputs()}
+            
         }
         
     }
