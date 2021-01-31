@@ -85,7 +85,7 @@ public class SoftPLC{
         
         self.importIO(list: ioList)
         
-        self.plcBackgroundCycle = PLCBackgroundCycle(timeInterval: 0.3, mainLoop:mainLoop)
+        self.plcBackgroundCycle = PLCBackgroundCycle(timeInterval: 0.250, mainLoop:mainLoop)
         
         self.controlPanel = PLCView(plcBackGroundCyle: plcBackgroundCycle, togglePLCState: togglePLCState, toggleSimulator: toggleSimulator)
         
@@ -136,7 +136,7 @@ public class SoftPLC{
             }
             
             self.simulator.writeAllOutputs()
-            
+			            
         }else{
             
             self.ioDrivers.forEach{$0.readAllInputs()}
