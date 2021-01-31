@@ -25,7 +25,7 @@ public struct PLCView: View {
             Spacer()
 			RunStopView(buttonState: $runButtonState,
 						plcIsRunning:(plcBackGroundCyle.status == .running),
-						cycleTime:Int(plcBackGroundCyle.cycleTimeInMicroSeconds)
+						cycleTime:plcBackGroundCyle.cycleTimeInMicroSeconds
 			)
 			.onAppear{runButtonState = (plcBackGroundCyle.status == .running)}
 			.onChange(of: runButtonState, perform: {togglePLCState($0)})
@@ -43,8 +43,10 @@ extension PLCView{
     public struct RunStopView: View {
         @Binding var buttonState:Bool
         let plcIsRunning:Bool
-		let cycleTime:Int
-        
+		let cycleTime:TimeInterval
+		
+		
+		
         public var body: some View {
             
             return HStack(){
@@ -55,8 +57,8 @@ extension PLCView{
                 })
                 .softToggleStyle(Circle(), padding: 20, pressedEffect: .hard)
                 .frame(width: 80)
-
-                Text(plcIsRunning ? "PLC in RUN!\n[\(cycleTime) µs]" : "PLC in STOP!")
+                Text(
+					plcIsRunning ? "PLC in RUN!\n[\(String(format: "%07d", locale: Locale.current, Int(cycleTime))) µs]" : "PLC in STOP!")
                     .fontWeight(.bold)
                     .foregroundColor(.secondary)
                     .frame(width: 120, alignment: .leading)
