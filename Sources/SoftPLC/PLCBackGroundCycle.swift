@@ -36,7 +36,7 @@ class PLCBackgroundCycle:ObservableObject {
 				self!.cycleTimeInMicroSeconds = currentCycleTime
 			}
 			
-			// Stop if PLC get slow
+			// Stop if PLC gets slow
 			let maxCycleTime = self!.maxCycleTime
 			if currentCycleTime > maxCycleTime{
 				self!.stop()
