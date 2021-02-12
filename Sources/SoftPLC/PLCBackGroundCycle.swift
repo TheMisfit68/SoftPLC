@@ -32,6 +32,7 @@ class PLCBackgroundCycle:ObservableObject {
 			
 			// Calculate the cycletime
 			let currentCycleTime = (TimeStamp.CurrentTimeStamp-cycleStart)*1000
+			// Update Swift-UI properties on the main thread
 			DispatchQueue.main.async {
 				self!.cycleTimeInMicroSeconds = currentCycleTime
 			}
