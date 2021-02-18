@@ -19,7 +19,6 @@ public struct PLCView: View {
     let toggleSimulator:(_ newState:Bool)->Void
     
     public var body: some View {
-		Color.Neumporhic.colorscheme = colorScheme
         
         return VStack{
             Spacer()
