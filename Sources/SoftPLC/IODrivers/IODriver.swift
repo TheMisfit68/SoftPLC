@@ -12,6 +12,8 @@ import IOTypes
 public protocol IODriver {
 	
 	var ioModules:[IOModule] {get set}
+	var ioFailure:Bool {get}
+
 	func readAllInputs()
 	func writeAllOutputs()
 	

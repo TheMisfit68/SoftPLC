@@ -10,9 +10,15 @@ import Foundation
 import ModbusDriver
 import IOTypes
 
-public enum Status{
+public enum Status:Equatable{
 	case running
-	case stopped
+	case stopped(reason: StopReason)
+}
+
+public enum StopReason:String{
+	case manual
+	case maxCycleTime
+	case ioFault
 }
 
 public enum ExecutionType{
@@ -99,9 +105,10 @@ public class SoftPLC{
 	
 	func mainLoop()->Void{
 		
-		if executionType == .simulated{
+		if executionType == .simulated, let simulator = self.simulator{
 			
-			self.simulator?.readAllInputs()
+			simulator.readAllInputs()
+			if simulator.ioFailure{ plcBackgroundCycle.stop(reason: .ioFault) }
 			
 			#if DEBUG
 			// Overwrite PLC inputs with simulated data,
@@ -123,11 +130,18 @@ public class SoftPLC{
 				}
 			}
 			
-			self.simulator?.writeAllOutputs()
+			simulator.writeAllOutputs()
+			if simulator.ioFailure{ plcBackgroundCycle.stop(reason: .ioFault) }
 			
 		}else{
 			
-			self.ioDrivers.forEach{$0.readAllInputs()}
+			self.ioDrivers.forEach{
+				$0.readAllInputs()
+				if $0.ioFailure{
+					plcBackgroundCycle.stop(reason: .ioFault)
+				}
+			}
+
 			
 			if self.status == .running{
 				
@@ -140,14 +154,19 @@ public class SoftPLC{
 				}
 			}
 			
-			self.ioDrivers.forEach{$0.writeAllOutputs()}
+			self.ioDrivers.forEach{
+				$0.writeAllOutputs()
+				if $0.ioFailure{
+					plcBackgroundCycle.stop(reason: .ioFault)
+				}
+			}
 			
 		}
 		
 	}
 	
 	public func stop(){
-		plcBackgroundCycle.stop()
+		plcBackgroundCycle.stop(reason: .manual)
 	}
 	
 	public func run() {

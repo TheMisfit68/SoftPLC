@@ -14,9 +14,18 @@ public struct PLCView: View {
     @Environment(\.colorScheme) var colorScheme: ColorScheme
     @ObservedObject var plcBackGroundCyle:PLCBackgroundCycle // Always detect changes in the PLCs status
     @State private var runButtonState:Bool = false// Detect button actions that originated from here
-    @State private var simButtonState:Bool = true // TODO: - Sync with the actual state like runButtonState
+	@State private var simButtonState:Bool = true // TODO: - Sync with the actual state like runButtonState
+
+	var stopReason:String{
+		if case let .stopped(reason: reason) = plcBackGroundCyle.status {
+			return reason.rawValue
+			}
+			return ""
+	}
+	
     let togglePLCState:(_ newState:Bool)->Void
     let toggleSimulator:(_ newState:Bool)->Void
+	
     
     public var body: some View {
         
@@ -24,6 +33,7 @@ public struct PLCView: View {
             Spacer()
 			RunStopView(buttonState: $runButtonState,
 						plcIsRunning:(plcBackGroundCyle.status == .running),
+						stopReason: stopReason,
 						cycleTime:plcBackGroundCyle.cycleTimeInMicroSeconds
 			)
 			.onAppear{runButtonState = (plcBackGroundCyle.status == .running)}
@@ -42,6 +52,7 @@ extension PLCView{
     public struct RunStopView: View {
         @Binding var buttonState:Bool
         let plcIsRunning:Bool
+		let stopReason:String
 		let cycleTime:TimeInterval
 		
 		
@@ -57,7 +68,7 @@ extension PLCView{
                 .softToggleStyle(Circle(), padding: 20, pressedEffect: .hard)
                 .frame(width: 80)
                 Text(
-					plcIsRunning ? "PLC in RUN!\n[\(String(format: "%07d", locale: Locale.current, Int(cycleTime))) µs]" : "PLC in STOP!")
+					plcIsRunning ? "PLC in RUN!\n[\(String(format: "%07d", locale: Locale.current, Int(cycleTime))) µs]" : "PLC in STOP!\n[\(stopReason)]")
                     .fontWeight(.bold)
                     .foregroundColor(.secondary)
                     .frame(width: 120, alignment: .leading)

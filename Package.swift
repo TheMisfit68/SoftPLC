@@ -15,8 +15,8 @@ let package = Package(
     dependencies: [
         // Dependencies declare other packages that this package depends on.
         .package(name: "ModbusDriver", url: "https://github.com/TheMisfit68/ModbusDriver.git", .branch("master")),
-        .package(name: "JVCocoa", url: "https://github.com/TheMisfit68/JVCocoa.git",  .branch("master")),
-        .package(name: "Neumorphic", url: "https://github.com/costachung/neumorphic.git", .upToNextMajor(from:"2.0.0")),
+        .package(name: "JVCocoa", url: "https://github.com/TheMisfit68/JVCocoa.git", .branch("master")),
+        .package(name: "Neumorphic", url: "https://github.com/costachung/neumorphic.git", .branch("master")),
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
@@ -31,3 +31,4 @@ let package = Package(
         )
     ]
 )
+ 

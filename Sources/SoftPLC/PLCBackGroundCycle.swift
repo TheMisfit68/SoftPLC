@@ -40,7 +40,7 @@ class PLCBackgroundCycle:ObservableObject {
 			// Stop if PLC gets slow
 			let maxCycleTime = self!.maxCycleTime
 			if currentCycleTime > maxCycleTime{
-				self!.stop()
+				self!.stop(reason: .maxCycleTime)
 			}
 			
 		})
@@ -49,7 +49,7 @@ class PLCBackgroundCycle:ObservableObject {
 	
 	
 	// MARK: - Cycle Control
-	@Published public var status: Status = .stopped
+	@Published public var status: Status = .stopped(reason:.manual)
 	@Published var cycleTimeInMicroSeconds:TimeInterval = 0
 	@Published var maxCycleTime:TimeInterval
 	
@@ -62,11 +62,11 @@ class PLCBackgroundCycle:ObservableObject {
 		}
 	}
 	
-	func stop() {
-		if status != .stopped {
+	func stop(reason:StopReason) {
+		if status != .stopped(reason: reason){
 			backgroundTimer.suspend()
 			DispatchQueue.main.async {
-				self.status = .stopped // At all times published variables should be changed on the main thread
+				self.status = .stopped(reason:reason) // At all times published variables should be changed on the main thread
 			}
 		}
 	}
