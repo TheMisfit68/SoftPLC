@@ -13,10 +13,10 @@ class PLCBackgroundCycle{
 	private let timeInterval: TimeInterval
 	private let mainLoop:()->Void // Function-pointer to main loop
 	
-	init(timeInterval: TimeInterval, mainLoop:@escaping ()->Void, maxCycleTimeInMicroSeconds:TimeInterval = 300000){
+	init(timeInterval: TimeInterval, mainLoop:@escaping ()->Void, maxCycleTimeInMiliSeconds:TimeInterval = 300){
 		self.timeInterval = timeInterval
 		self.mainLoop = mainLoop
-		self.maxCycleTime = maxCycleTimeInMicroSeconds
+		self.maxCycleTime = maxCycleTimeInMiliSeconds
 	}
 	
 	private lazy var backgroundTimer: DispatchSourceTimer = {
@@ -28,20 +28,15 @@ class PLCBackgroundCycle{
 			AppNapController.shared.keepAlive()
 			
 			let cycleStart = TimeStamp.CurrentTimeStamp
+			
 			self?.mainLoop()
 			
 			// Calculate the cycletime
-			let currentCycleTime = (TimeStamp.CurrentTimeStamp-cycleStart)*1000
-			// Update Swift-UI properties on the main thread
-			DispatchQueue.main.async {
-				self?.cycleTimeInMicroSeconds = currentCycleTime
-			}
+			self?.cycleTimeInMiliSeconds = (TimeStamp.CurrentTimeStamp-cycleStart)
 			
 			// Stop if PLC gets slow
-			if let maxCycleTime = self?.maxCycleTime{
-				if currentCycleTime > maxCycleTime{
-					self?.stop(reason: .maxCycleTime)
-				}
+			if let currentCycleTime = self?.cycleTimeInMiliSeconds,  let maxCycleTime = self?.maxCycleTime, (currentCycleTime > maxCycleTime){
+				self?.stop(reason: .maxCycleTime)
 			}
 			
 		})
@@ -50,7 +45,7 @@ class PLCBackgroundCycle{
 	
 	// MARK: - Cycle Control
 	var status:Status = .stopped(reason:.manual)
-	var cycleTimeInMicroSeconds:TimeInterval = 0
+	var cycleTimeInMiliSeconds:TimeInterval = 0
 	var maxCycleTime:TimeInterval
 	
 	func run() {

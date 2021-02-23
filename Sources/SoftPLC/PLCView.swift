@@ -18,11 +18,15 @@ public struct PLCView: View {
 	@State private var runButtonState:Bool = false // Detect button actions that originated from here
 	@State private var simButtonState:Bool = false // Detect button actions that originated from here
 	
-	var stopReason:String{
+	var stopReason:(String, String){
 		if case let .stopped(reason: reason) = plc.status {
-			return reason.rawValue
+			var stopReason:(String, String) = (reason.rawValue, "")
+			if reason == .maxCycleTime {
+				stopReason.1 = String(format: "%03d", locale: Locale.current, Int(plc.cycleTimeInMiliSeconds)) + " ms"
+			}
+			return stopReason
 		}
-		return ""
+		return ("", "")
 	}
 	
 	let togglePLCState:(_ newState:Bool)->Void
@@ -36,7 +40,7 @@ public struct PLCView: View {
 			RunStopView(buttonState: $runButtonState,
 						plcIsRunning:(plc.status == .running),
 						stopReason: stopReason,
-						cycleTime:plc.cycleTimeInMicroSeconds,
+						cycleTime:plc.cycleTimeInMiliSeconds,
 						maxCycleTime: $maxCycleTime
 			)
 			.onAppear{
@@ -60,7 +64,7 @@ extension PLCView{
 	public struct RunStopView: View {
 		@Binding var buttonState:Bool
 		let plcIsRunning:Bool
-		let stopReason:String
+		let stopReason:(String, String)
 		let cycleTime:TimeInterval
 		@Binding var maxCycleTime:TimeInterval
 		@State var editMaxCycleTime:Bool = false
@@ -90,10 +94,10 @@ extension PLCView{
 				}
 				VStack(){
 					Text(
-						plcIsRunning ? "PLC in RUN!\n[\(String(format: "%07d", locale: Locale.current, Int(cycleTime))) µs]" : "PLC in STOP!\n[\(stopReason)]")
+						plcIsRunning ? "PLC in RUN!\n[\(String(format: "%03d", locale: Locale.current, Int(cycleTime))) ms]" : "PLC in STOP!\n[\(stopReason.0) \(stopReason.1)]")
 						.fontWeight(.bold)
 						.foregroundColor(.secondary)
-						.frame(width: 120, alignment: .leading)
+						.frame(width: 200, alignment: .leading)
 				}
 				Spacer()
 			}
@@ -113,7 +117,7 @@ extension PLCView.RunStopView{
 		@State var fieldContent:TimeInterval!
 		@State var fieldColor = Color.red
 		
-		let validationRange:ClosedRange<TimeInterval> = (3000...500000)
+		let validationRange:ClosedRange<TimeInterval> = (10...750)
 		
 		public var body: some View {
 			

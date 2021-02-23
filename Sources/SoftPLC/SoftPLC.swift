@@ -31,7 +31,7 @@ public class SoftPLC:ObservableObject{
 	public var controlPanel:PLCView!
 	@Published public var executionType:ExecutionType = .simulated
 	@Published var status:Status
-	@Published var cycleTimeInMicroSeconds:TimeInterval = 0
+	@Published var cycleTimeInMiliSeconds:TimeInterval = 0
 	@Published var maxCycleTime:TimeInterval{
 		didSet{
 			plcBackgroundCycle.maxCycleTime = maxCycleTime
@@ -85,7 +85,7 @@ public class SoftPLC:ObservableObject{
 		}
 		
 		self.importIO(list: ioList)
-		self.plcBackgroundCycle = PLCBackgroundCycle(timeInterval: 0.250, mainLoop:mainLoop)
+		self.plcBackgroundCycle = PLCBackgroundCycle(timeInterval: 0.250, mainLoop:mainLoop, maxCycleTimeInMiliSeconds: 300)
 		self.controlPanel = PLCView(plc: self, togglePLCState: togglePLCState, toggleSimulator: toggleSimulator)
 		
 	}
@@ -124,11 +124,8 @@ public class SoftPLC:ObservableObject{
 	// MARK: - Main PLC Cycle
 	
 	func mainLoop()->Void{
-		
-		refreshBackgroundInfo()
-		
+				
 		if executionType == .simulated, let simulator = self.simulator{
-			
 			
 			simulator.readAllInputs()
 			if simulator.ioFailure{ stop(reason: .ioFault) }
@@ -165,13 +162,13 @@ public class SoftPLC:ObservableObject{
 			
 			
 			if self.status == .running{
-				
+
 				self.plcObjects.forEach { instanceName, object in
-					
+
 					(object as? Parameterizable)?.assignInputParameters()
-					
+
 					(object as? Parameterizable)?.assignOutputParameters()
-					
+
 				}
 			}
 			
@@ -181,7 +178,9 @@ public class SoftPLC:ObservableObject{
 			}
 			
 		}
-		
+
+		refreshBackgroundInfo()
+
 	}
 	
 	public func stop(reason:StopReason){
@@ -231,7 +230,7 @@ public class SoftPLC:ObservableObject{
 		// even if they exist in the background
 		DispatchQueue.main.async {
 			self.status = self.plcBackgroundCycle.status
-			self.cycleTimeInMicroSeconds = self.plcBackgroundCycle.cycleTimeInMicroSeconds
+			self.cycleTimeInMiliSeconds = self.plcBackgroundCycle.cycleTimeInMiliSeconds
 			self.maxCycleTime = self.plcBackgroundCycle.maxCycleTime
 		}
 	}
