@@ -32,7 +32,11 @@ public class SoftPLC:ObservableObject{
 	@Published public var executionType:ExecutionType = .simulated
 	@Published var status:Status
 	@Published var cycleTimeInMicroSeconds:TimeInterval = 0
-	@Published var maxCycleTime:TimeInterval
+	@Published var maxCycleTime:TimeInterval{
+		didSet{
+			plcBackgroundCycle.maxCycleTime = maxCycleTime
+		}
+	}
 	
 	
 	public typealias Symbol = String
