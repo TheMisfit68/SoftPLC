@@ -11,7 +11,7 @@ import IOTypes
 
 // Make Modbus-Types conform to PLC-Types
 extension ModbusDriver:IODriver{
-	
+
 	public var ioModules: [IOModule] {
 		get {
 			return modbusModules
@@ -20,5 +20,17 @@ extension ModbusDriver:IODriver{
 			modbusModules = (newValue as! [ModbusModule])
 		}
 	}
+	
+	public var ioFailure:Bool {
+		get{
+		(connectionState != .connected) && (errorCount > maxErrorCount)
+		}
+		set{
+			if newValue == false{
+				errorCount = 0
+			}
+		}
+	}
 }
+
 extension ModbusSimulator:IOSimulator{}

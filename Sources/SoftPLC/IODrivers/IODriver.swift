@@ -9,10 +9,10 @@ import Foundation
 import IOTypes
 
 // Define PLC-types
-public protocol IODriver {
+public protocol IODriver:AnyObject{
 	
 	var ioModules:[IOModule] {get set}
-	var ioFailure:Bool {get}
+	var ioFailure:Bool {get set}
 
 	func readAllInputs()
 	func writeAllOutputs()

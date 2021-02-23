@@ -8,7 +8,7 @@
 import Foundation
 import JVCocoa
 
-class PLCBackgroundCycle:ObservableObject {
+class PLCBackgroundCycle{
 	
 	private let timeInterval: TimeInterval
 	private let mainLoop:()->Void // Function-pointer to main loop
@@ -28,46 +28,42 @@ class PLCBackgroundCycle:ObservableObject {
 			AppNapController.shared.keepAlive()
 			
 			let cycleStart = TimeStamp.CurrentTimeStamp
-			self!.mainLoop()
+			self?.mainLoop()
 			
 			// Calculate the cycletime
 			let currentCycleTime = (TimeStamp.CurrentTimeStamp-cycleStart)*1000
 			// Update Swift-UI properties on the main thread
 			DispatchQueue.main.async {
-				self!.cycleTimeInMicroSeconds = currentCycleTime
+				self?.cycleTimeInMicroSeconds = currentCycleTime
 			}
 			
 			// Stop if PLC gets slow
-			let maxCycleTime = self!.maxCycleTime
-			if currentCycleTime > maxCycleTime{
-				self!.stop(reason: .maxCycleTime)
+			if let maxCycleTime = self?.maxCycleTime{
+				if currentCycleTime > maxCycleTime{
+					self?.stop(reason: .maxCycleTime)
+				}
 			}
 			
 		})
 		return timer
 	}()
 	
-	
 	// MARK: - Cycle Control
-	@Published public var status: Status = .stopped(reason:.manual)
-	@Published var cycleTimeInMicroSeconds:TimeInterval = 0
-	@Published var maxCycleTime:TimeInterval
+	var status:Status = .stopped(reason:.manual)
+	var cycleTimeInMicroSeconds:TimeInterval = 0
+	var maxCycleTime:TimeInterval
 	
 	func run() {
 		if status != .running {
+			status = .running
 			backgroundTimer.resume()
-			DispatchQueue.main.async {
-				self.status = .running // At all times published variables should be changed on the main thread
-			}
 		}
 	}
 	
 	func stop(reason:StopReason) {
-		if status != .stopped(reason: reason){
+		if status == .running{
+			status = .stopped(reason:reason)
 			backgroundTimer.suspend()
-			DispatchQueue.main.async {
-				self.status = .stopped(reason:reason) // At all times published variables should be changed on the main thread
-			}
 		}
 	}
 	

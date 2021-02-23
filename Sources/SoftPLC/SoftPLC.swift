@@ -26,9 +26,14 @@ public enum ExecutionType{
 	case simulated
 }
 
-public class SoftPLC{
+public class SoftPLC:ObservableObject{
 	
 	public var controlPanel:PLCView!
+	@Published public var executionType:ExecutionType = .simulated
+	@Published var status:Status
+	@Published var cycleTimeInMicroSeconds:TimeInterval = 0
+	@Published var maxCycleTime:TimeInterval
+	
 	
 	public typealias Symbol = String
 	public typealias IOList = [[[Symbol?]]]
@@ -38,7 +43,6 @@ public class SoftPLC{
 	public var hardwareConfig:HardwareConfiguration = [:]
 	public var ioDrivers:[IODriver] = []
 	public var simulator:IOSimulator?
-	public var executionType:ExecutionType = .normal
 	public var variableList:[Symbol:PLCVariable] = [:]
 	public var plcObjects:[Symbol:PLCclass] = [:]{
 		didSet{
@@ -52,12 +56,11 @@ public class SoftPLC{
 	
 	var plcBackgroundCycle:PLCBackgroundCycle! = nil
 	
-	public var status:Status{
-		return plcBackgroundCycle.status
-	}
-	
-	
 	public init(hardwareConfig:HardwareConfiguration, ioList:IOList, simulator:IOSimulator? = nil){
+		
+		self.status = .stopped(reason: .manual)
+		self.executionType = .normal
+		self.maxCycleTime = 300
 		
 		self.hardwareConfig = hardwareConfig
 		self.simulator = simulator
@@ -78,26 +81,39 @@ public class SoftPLC{
 		}
 		
 		self.importIO(list: ioList)
-		
 		self.plcBackgroundCycle = PLCBackgroundCycle(timeInterval: 0.250, mainLoop:mainLoop)
-		
-		self.controlPanel = PLCView(plcBackGroundCyle: plcBackgroundCycle, togglePLCState: togglePLCState, toggleSimulator: toggleSimulator)
+		self.controlPanel = PLCView(plc: self, togglePLCState: togglePLCState, toggleSimulator: toggleSimulator)
 		
 	}
 	
 	func togglePLCState(newState:Bool){
+		
 		if newState{
+			resetIOFailures()
 			run()
 		}else{
-			stop()
+			stop(reason: .manual)
+			resetIOFailures()
 		}
+		
 	}
 	
 	func toggleSimulator(newState:Bool){
+		
 		if newState{
 			executionType = .simulated
 		}else{
 			executionType = .normal
+		}
+		resetIOFailures()
+		
+	}
+	
+	func resetIOFailures(){
+		if executionType == .simulated{
+			simulator?.ioFailure.reset()
+		}else if executionType == .normal{
+			ioDrivers.forEach{$0.ioFailure.reset()}
 		}
 	}
 	
@@ -105,10 +121,13 @@ public class SoftPLC{
 	
 	func mainLoop()->Void{
 		
+		refreshBackgroundInfo()
+		
 		if executionType == .simulated, let simulator = self.simulator{
 			
+			
 			simulator.readAllInputs()
-			if simulator.ioFailure{ plcBackgroundCycle.stop(reason: .ioFault) }
+			if simulator.ioFailure{ stop(reason: .ioFault) }
 			
 			#if DEBUG
 			// Overwrite PLC inputs with simulated data,
@@ -131,17 +150,15 @@ public class SoftPLC{
 			}
 			
 			simulator.writeAllOutputs()
-			if simulator.ioFailure{ plcBackgroundCycle.stop(reason: .ioFault) }
+			if simulator.ioFailure{ stop(reason: .ioFault) }
 			
-		}else{
+		}else if executionType == .normal{
 			
 			self.ioDrivers.forEach{
 				$0.readAllInputs()
-				if $0.ioFailure{
-					plcBackgroundCycle.stop(reason: .ioFault)
-				}
+				if $0.ioFailure{ stop(reason: .ioFault) }
 			}
-
+			
 			
 			if self.status == .running{
 				
@@ -156,21 +173,21 @@ public class SoftPLC{
 			
 			self.ioDrivers.forEach{
 				$0.writeAllOutputs()
-				if $0.ioFailure{
-					plcBackgroundCycle.stop(reason: .ioFault)
-				}
+				if $0.ioFailure{ stop(reason: .ioFault) }
 			}
 			
 		}
 		
 	}
 	
-	public func stop(){
-		plcBackgroundCycle.stop(reason: .manual)
+	public func stop(reason:StopReason){
+		plcBackgroundCycle.stop(reason:reason)
+		refreshBackgroundInfo()
 	}
 	
 	public func run() {
 		plcBackgroundCycle.run()
+		refreshBackgroundInfo()
 	}
 	
 	
@@ -203,6 +220,16 @@ public class SoftPLC{
 			ioSignal = ioModule?.channels[channelNumber]
 		}
 		return ioSignal
+	}
+	
+	func refreshBackgroundInfo(){
+		// At all times published variables should be changed on the main thread
+		// even if they exist in the background
+		DispatchQueue.main.async {
+			self.status = self.plcBackgroundCycle.status
+			self.cycleTimeInMicroSeconds = self.plcBackgroundCycle.cycleTimeInMicroSeconds
+			self.maxCycleTime = self.plcBackgroundCycle.maxCycleTime
+		}
 	}
 	
 }
