@@ -22,7 +22,7 @@ public struct PLCView: View {
 		if case let .stopped(reason: reason) = plc.status {
 			var stopReason:(String, String) = (reason.rawValue, "")
 			if reason == .maxCycleTime {
-				stopReason.1 = String(format: "%03d", locale: Locale.current, Int(plc.cycleTimeInMiliSeconds)) + " ms"
+				stopReason.1 = String(format: "%04d", locale: Locale.current, Int(plc.cycleTimeInMiliSeconds)) + " ms"
 			}
 			return stopReason
 		}
@@ -94,7 +94,7 @@ extension PLCView{
 				}
 				VStack(){
 					Text(
-						plcIsRunning ? "PLC in RUN!\n[\(String(format: "%03d", locale: Locale.current, Int(cycleTime))) ms]" : "PLC in STOP!\n[\(stopReason.0) \(stopReason.1)]")
+						plcIsRunning ? "PLC in RUN!\n[\(String(format: "%04d", locale: Locale.current, Int(cycleTime))) ms]" : "PLC in STOP!\n[\(stopReason.0) \(stopReason.1)]")
 						.fontWeight(.bold)
 						.foregroundColor(.secondary)
 						.frame(width: 200, alignment: .leading)
