@@ -64,7 +64,7 @@ public class SoftPLC:ObservableObject{
 		
 		self.status = .stopped(reason: .manual)
 		self.executionType = .normal
-		self.maxCycleTime = 300
+		self.maxCycleTime = 750
 		
 		self.hardwareConfig = hardwareConfig
 		self.simulator = simulator
@@ -85,7 +85,7 @@ public class SoftPLC:ObservableObject{
 		}
 		
 		self.importIO(list: ioList)
-		self.plcBackgroundCycle = PLCBackgroundCycle(timeInterval: 0.250, mainLoop:mainLoop, maxCycleTimeInMiliSeconds: 300)
+		self.plcBackgroundCycle = PLCBackgroundCycle(timeInterval: 0.250, mainLoop:mainLoop, maxCycleTimeInMiliSeconds: self.maxCycleTime)
 		self.controlPanel = PLCView(plc: self, togglePLCState: togglePLCState, toggleSimulator: toggleSimulator)
 		
 	}
