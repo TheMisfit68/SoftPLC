@@ -34,7 +34,9 @@ public class SoftPLC:ObservableObject{
 	@Published var cycleTimeInMiliSeconds:TimeInterval = 0
 	@Published var maxCycleTime:TimeInterval{
 		didSet{
-			plcBackgroundCycle.maxCycleTime = maxCycleTime
+			if maxCycleTime != oldValue{
+				plcBackgroundCycle.maxCycleTime = maxCycleTime
+			}
 		}
 	}
 	
@@ -124,7 +126,7 @@ public class SoftPLC:ObservableObject{
 	// MARK: - Main PLC Cycle
 	
 	func mainLoop()->Void{
-				
+		
 		if executionType == .simulated, let simulator = self.simulator{
 			
 			simulator.readAllInputs()
@@ -162,13 +164,13 @@ public class SoftPLC:ObservableObject{
 			
 			
 			if self.status == .running{
-
+				
 				self.plcObjects.forEach { instanceName, object in
-
+					
 					(object as? Parameterizable)?.assignInputParameters()
-
+					
 					(object as? Parameterizable)?.assignOutputParameters()
-
+					
 				}
 			}
 			
@@ -178,9 +180,9 @@ public class SoftPLC:ObservableObject{
 			}
 			
 		}
-
+		
 		refreshBackgroundInfo()
-
+		
 	}
 	
 	public func stop(reason:StopReason){
