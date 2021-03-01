@@ -36,6 +36,7 @@ class PLCBackgroundCycle{
 			
 			// Stop if PLC gets slow
 			if let currentCycleTime = self?.cycleTimeInMiliSeconds,  let maxCycleTime = self?.maxCycleTime, (currentCycleTime > maxCycleTime){
+				print("+++++MAXcycltime exceeded!")
 				self?.stop(reason: .maxCycleTime)
 			}
 			
