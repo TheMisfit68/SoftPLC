@@ -13,10 +13,11 @@ class PLCBackgroundCycle{
 	private let timeInterval: TimeInterval
 	private let mainLoop:()->Void // Function-pointer to main loop
 	
-	init(timeInterval: TimeInterval, mainLoop:@escaping ()->Void, maxCycleTimeInMiliSeconds:TimeInterval = 300){
+	init(timeInterval: TimeInterval, mainLoop:@escaping ()->Void, maxCycleTimeInMiliSeconds:TimeInterval = 300, maxNumberOfOverruns:Int = 3){
 		self.timeInterval = timeInterval
 		self.mainLoop = mainLoop
 		self.maxCycleTime = maxCycleTimeInMiliSeconds
+		self.maxNumberOfOverruns = maxNumberOfOverruns
 	}
 	
 	private lazy var backgroundTimer: DispatchSourceTimer = {
@@ -30,24 +31,39 @@ class PLCBackgroundCycle{
 			let cycleStart = TimeStamp.CurrentTimeStamp
 			
 			self?.mainLoop()
-			
-			// Calculate the cycletime
-			self?.cycleTimeInMiliSeconds = (TimeStamp.CurrentTimeStamp-cycleStart)
-			
-			// Stop if PLC gets slow
-			if let currentCycleTime = self?.cycleTimeInMiliSeconds,  let maxCycleTime = self?.maxCycleTime, (currentCycleTime > maxCycleTime){
-				print("+++++MAXcycltime exceeded!")
-				self?.stop(reason: .maxCycleTime)
-			}
+						
+			self?.monitorCycletime(TimeStamp.CurrentTimeStamp-cycleStart)
 			
 		})
 		return timer
 	}()
 	
+	private func monitorCycletime(_ currentCycleTime: TimeInterval){
+		
+		cycleTimeInMiliSeconds = currentCycleTime
+
+		// Stop if PLC gets to slow a number of times
+		if (cycleTimeInMiliSeconds >= maxCycleTime){
+			
+			numberOfOverruns += 1
+			guard numberOfOverruns < maxNumberOfOverruns else{
+				stop(reason: .maxCycleTime)
+				print("+++++MAXcycltime \(numberOfOverruns) times exceeded!")
+				return
+			}
+			
+		}else{
+			numberOfOverruns = 0 // Reset cunt when the cycletime normalises again
+		}
+		
+	}
+	
 	// MARK: - Cycle Control
 	var status:Status = .stopped(reason:.manual)
 	var cycleTimeInMiliSeconds:TimeInterval = 0
 	var maxCycleTime:TimeInterval
+	var numberOfOverruns:Int = 0
+	var maxNumberOfOverruns:Int
 	
 	func run() {
 		if status != .running {
