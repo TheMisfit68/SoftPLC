@@ -45,10 +45,12 @@ class PLCBackgroundCycle{
 		// Stop if PLC gets to slow a number of times
 		if (cycleTimeInMiliSeconds >= maxCycleTime){
 			
+			Debugger.shared.log(debugLevel:.Warning , "Maximum PLC cycletime exceeded")
+			
 			numberOfOverruns += 1
 			guard numberOfOverruns < maxNumberOfOverruns else{
 				stop(reason: .maxCycleTime)
-				print("+++++MAXcycltime \(numberOfOverruns) times exceeded!")
+				Debugger.shared.log(debugLevel:.Critical , "Multiple PLC overruns")
 				return
 			}
 			
