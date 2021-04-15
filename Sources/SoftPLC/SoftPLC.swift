@@ -27,7 +27,7 @@ public enum ExecutionType{
 }
 
 public class SoftPLC:ObservableObject{
-	
+		
 	public var controlPanel:PLCView!
 	@Published public var executionType:ExecutionType = .simulated
 	@Published var status:Status
@@ -87,7 +87,7 @@ public class SoftPLC:ObservableObject{
 		}
 		
 		self.importIO(list: ioList)
-		self.plcBackgroundCycle = PLCBackgroundCycle(timeInterval: 0.250, mainLoop:mainLoop, maxCycleTimeInMiliSeconds: self.maxCycleTime)
+		self.plcBackgroundCycle = PLCBackgroundCycle(timeInterval: 0.250, mainLoop:{ [weak self] in self?.mainLoop() }, maxCycleTimeInMiliSeconds: self.maxCycleTime)
 		self.controlPanel = PLCView(plc: self, togglePLCState: togglePLCState, toggleSimulator: toggleSimulator)
 		
 	}
