@@ -49,7 +49,7 @@ public struct PLCView: View {
 			}
 			.onChange(of: runButtonState, perform: {togglePLCState($0)})
 			.onChange(of: maxCycleTime, perform: {plc.maxCycleTime = $0})
-
+			
 			Spacer()
 			SimulatorView(buttonState: $simButtonState)
 				.onAppear{simButtonState = (plc.executionType == .simulated)}
@@ -102,7 +102,7 @@ extension PLCView{
 				Spacer()
 			}
 		}
-
+		
 	}
 }
 
@@ -113,28 +113,35 @@ extension PLCView.RunStopView{
 		@Binding var editMaxCycleTime:Bool
 		@Binding var maxCycleTime:TimeInterval
 		
-		@State var originalMaxCycleTime:TimeInterval!
-		@State var fieldContent:TimeInterval!
-		@State var fieldColor = Color.red
+		@State var originalMaxCycleTime:TimeInterval! = nil
+		@State var fieldContent:TimeInterval = 0
 		
 		let validationRange:ClosedRange<TimeInterval> = (10...750)
+		var fieldContentIsValidated:Bool{
+			validationRange.contains(fieldContent)
+		}
+		var fieldColor:Color{
+			fieldContentIsValidated ? Color.clear : Color.red.opacity(0.2)
+		}
 		
 		public var body: some View {
 			
 			VStack{
 				Text("Adjust the maximum cycle time of the PLC")
 				
+				// FIXME: - Add keyboardtype modifier when it bcomes available for MacOS or
+				// check if binding $fieldContent updates while typing
+				// currently it does not when used with a formatter
 				TextField("", value: $fieldContent,
-						  formatter: NumberFormatter(),
-						  onCommit: {maxCycleTime = fieldContent}
+						  formatter: NumberFormatter()
 				)
 				.disableAutocorrection(true)
-				.border(fieldColor)
+				.background(fieldColor)
 				.frame(width:80)
 				.multilineTextAlignment(.center)
 				.onAppear{originalMaxCycleTime = maxCycleTime; fieldContent = originalMaxCycleTime}
 				
-				Text("⚠️ Low entries may cause the PLC to stop!!!")
+				Text(fieldContentIsValidated ? "⚠️ Low entries may cause the PLC to stop!!!" : "🛑 VALUE OUT OF RANGE!!!")
 				
 				
 				HStack{
@@ -147,12 +154,12 @@ extension PLCView.RunStopView{
 						// Limit maxCycleTime between boundaries
 						maxCycleTime = fieldContent.copyLimitedBetween(validationRange)
 						editMaxCycleTime = false
-					}
+					}.disabled(!fieldContentIsValidated)
+
 				}
 			}
 			.padding()
 		}
-		
 	}
 }
 
