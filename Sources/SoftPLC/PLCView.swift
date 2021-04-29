@@ -129,9 +129,10 @@ extension PLCView.RunStopView{
 			VStack{
 				Text("Adjust the maximum cycle time of the PLC")
 				
-				// FIXME: - Add keyboardtype modifier when it bcomes available for MacOS or
+				// FIXME: - Add keyboardtype modifier to this textfield
+				// when it bcomes available for MacOS or
 				// check if binding $fieldContent updates while typing
-				// currently it does not when used with a formatter
+				// currently it does not when used with a formatter due to a bug
 				TextField("", value: $fieldContent,
 						  formatter: NumberFormatter()
 				)
