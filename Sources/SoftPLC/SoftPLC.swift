@@ -138,6 +138,8 @@ public class SoftPLC:ObservableObject{
 			self.plcObjects.forEach { instanceName, object in
 				(object as? Simulateable)?.simulateHardwareFeedback()
 			}
+			// And don't guard the Maximum Cycle Time while debugging
+			plcBackgroundCycle.numberOfOverruns = 0
 			#endif
 			
 			
