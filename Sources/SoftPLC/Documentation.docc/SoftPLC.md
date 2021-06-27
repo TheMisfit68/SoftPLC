@@ -18,9 +18,3 @@ A Soft-PLC could be used for non critical automation applications, like you pers
 Many IO-modules use 'Modbus over Ethernet' as their communication protocol. Modbus is well documented and easy to implement communication protocol used in industrial applications.
 
 
-## Topics
-
-### <!--@START_MENU_TOKEN@-->Group<!--@END_MENU_TOKEN@-->
-
-- <!--@START_MENU_TOKEN@-->``Symbol``<!--@END_MENU_TOKEN@-->
- 
