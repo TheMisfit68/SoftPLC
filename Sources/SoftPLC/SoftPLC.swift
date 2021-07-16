@@ -136,7 +136,7 @@ public class SoftPLC:ObservableObject{
 			// Overwrite PLC inputs with simulated data,
 			// before they get to be used as input parameters
 			self.plcObjects.forEach { instanceName, object in
-				(object as? Simulateable)?.simulateHardwareFeedback()
+				(object as? Simulateable)?.simulateHardwareInputs()
 			}
 			// And don't guard the Maximum Cycle Time while debugging
 			plcBackgroundCycle.numberOfOverruns = 0

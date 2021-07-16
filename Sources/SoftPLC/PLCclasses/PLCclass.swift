@@ -27,6 +27,6 @@ public protocol Parameterizable:PLCclass{
 
 public protocol Simulateable:PLCclass{
     
-    func simulateHardwareFeedback()
+    func simulateHardwareInputs()
     
 }
