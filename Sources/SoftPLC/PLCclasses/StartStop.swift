@@ -9,7 +9,7 @@
 import Foundation
 import JVCocoa
 
-open class StartStop:PLCclass{
+open class StartStop:PLCClass{
     
     public internal(set) var output:Bool = false
     public var feedbackValue:Bool? = nil
