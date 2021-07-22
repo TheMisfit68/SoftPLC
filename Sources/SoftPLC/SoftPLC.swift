@@ -50,7 +50,7 @@ public class SoftPLC:ObservableObject{
 	public var ioDrivers:[IODriver] = []
 	public var simulator:IOSimulator?
 	public var variableList:[Symbol:PLCVariable] = [:]
-	public var plcObjects:[Symbol:PLCclass] = [:]{
+	public var plcObjects:[Symbol:PLCClass] = [:]{
 		didSet{
 			plcObjects.forEach{key, object in
 				object.plc = self
@@ -149,6 +149,8 @@ public class SoftPLC:ObservableObject{
 					
 					(object as? Parameterizable)?.assignInputParameters()
 					
+					(object as? CyclicRunnable)?.runCycle()
+					
 					(object as? Parameterizable)?.assignOutputParameters()
 					
 				}
@@ -170,6 +172,8 @@ public class SoftPLC:ObservableObject{
 				self.plcObjects.forEach { instanceName, object in
 					
 					(object as? Parameterizable)?.assignInputParameters()
+					
+					(object as? CyclicRunnable)?.runCycle()
 					
 					(object as? Parameterizable)?.assignOutputParameters()
 					
