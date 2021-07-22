@@ -9,7 +9,7 @@
 import Foundation
 
 
-open class LeftRight:PLCclass{
+open class LeftRight:PLCClass{
 //    
 //    enum Status:Int{
 //        case stopped
