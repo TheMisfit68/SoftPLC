@@ -8,7 +8,7 @@
 
 import Foundation
 
-open class DigitalTimer:PLCclass{
+open class DigitalTimer:PLCClass{
     
     private var risingEdge:Bool = false
     private var falingEdge:Bool = false
