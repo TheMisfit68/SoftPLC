@@ -10,24 +10,12 @@ import Foundation
 // MARK: - SET/RESET
 public extension Bool {
 	
-	mutating func set(){
-		self = true
-	}
-	
-	mutating func reset(){
-		self = false
-	}
-	
-	mutating func setConditional(_ condition:Bool){
-		if condition{
-			self.set()
-		}
+	mutating func set(_ condition:Bool? = nil){
+		self = (condition == true)
 	}
 
-	mutating func resetConditional(_ condition:Bool){
-		if condition{
-			self.reset()
-		}
+	mutating func reset(_ condition:Bool? = nil){
+		self = (condition == true)
 	}
 	
 }
