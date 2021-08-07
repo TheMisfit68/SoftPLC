@@ -22,14 +22,16 @@ public enum StopReason:String{
 }
 
 public enum ExecutionType{
+	
 	case normal
-	case simulated
+	case simulated(withHardware:Bool)
+	
 }
 
 public class SoftPLC:ObservableObject{
-		
+	
 	public var controlPanel:PLCView!
-	@Published public var executionType:ExecutionType = .simulated
+	@Published public var executionType:ExecutionType = .simulated(withHardware:true)
 	@Published var status:Status
 	@Published var cycleTimeInMiliSeconds:TimeInterval = 0
 	@Published var maxCycleTime:TimeInterval{
@@ -88,7 +90,7 @@ public class SoftPLC:ObservableObject{
 		
 		self.importIO(list: ioList)
 		self.plcBackgroundCycle = PLCBackgroundCycle(timeInterval: 0.250, mainLoop:{ [weak self] in self?.mainLoop() }, maxCycleTimeInMiliSeconds: self.maxCycleTime)
-		self.controlPanel = PLCView(plc: self, togglePLCState: togglePLCState, toggleSimulator: toggleSimulator)
+		self.controlPanel = PLCView(plc: self, togglePLCState: togglePLCState, toggleSimulator: toggleSimulator, toggleHardwareSimulation: toggleHardwareSimulation)
 		
 	}
 	
@@ -107,7 +109,7 @@ public class SoftPLC:ObservableObject{
 	func toggleSimulator(newState:Bool){
 		
 		if newState{
-			executionType = .simulated
+			executionType = .simulated(withHardware:true)
 		}else{
 			executionType = .normal
 		}
@@ -115,10 +117,14 @@ public class SoftPLC:ObservableObject{
 		
 	}
 	
+	func toggleHardwareSimulation(newState:Bool){
+			executionType = .simulated(withHardware:newState)
+	}
+	
 	func resetIOFailures(){
-		if executionType == .simulated{
+		if case .simulated(_) = executionType {
 			simulator?.ioFailure.reset()
-		}else if executionType == .normal{
+		}else if case .normal = executionType {
 			ioDrivers.forEach{$0.ioFailure.reset()}
 		}
 	}
@@ -127,20 +133,22 @@ public class SoftPLC:ObservableObject{
 	
 	func mainLoop()->Void{
 		
-		if executionType == .simulated, let simulator = self.simulator{
+		if case .simulated(let withHardware) = executionType, let simulator = self.simulator{
 			
 			simulator.readAllInputs()
 			if simulator.ioFailure{ stop(reason: .ioFault) }
 			
-			#if DEBUG
-			// Overwrite PLC inputs with simulated data,
-			// before they get to be used as input parameters
-			self.plcObjects.forEach { instanceName, object in
-				(object as? Simulateable)?.simulateHardwareInputs()
+#if DEBUG
+			if withHardware{
+				// Overwrite PLC inputs with data of software simulated hardware,
+				// before they get to be used as input parameters
+				self.plcObjects.forEach { instanceName, object in
+					(object as? Simulateable)?.simulateHardwareInputs()
+				}
 			}
 			// And don't guard the Maximum Cycle Time while debugging
 			plcBackgroundCycle.numberOfOverruns = 0
-			#endif
+#endif
 			
 			
 			if self.status == .running{
@@ -159,7 +167,7 @@ public class SoftPLC:ObservableObject{
 			simulator.writeAllOutputs()
 			if simulator.ioFailure{ stop(reason: .ioFault) }
 			
-		}else if executionType == .normal{
+		}else if case .normal = executionType{
 			
 			self.ioDrivers.forEach{
 				$0.readAllInputs()

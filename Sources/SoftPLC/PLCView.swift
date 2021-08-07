@@ -17,6 +17,7 @@ public struct PLCView: View {
 	@State private var maxCycleTime:TimeInterval = 0
 	@State private var runButtonState:Bool = false // Detect button actions that originated from here
 	@State private var simButtonState:Bool = false // Detect button actions that originated from here
+	@State private var hardwareSimButtonState:Bool = false // Detect button actions that originated from here
 	
 	var stopReason:(String, String){
 		if case let .stopped(reason: reason) = plc.status {
@@ -31,6 +32,7 @@ public struct PLCView: View {
 	
 	let togglePLCState:(_ newState:Bool)->Void
 	let toggleSimulator:(_ newState:Bool)->Void
+	let toggleHardwareSimulation:(_ newState:Bool)->Void
 	
 	
 	public var body: some View {
@@ -43,21 +45,38 @@ public struct PLCView: View {
 						cycleTime:plc.cycleTimeInMiliSeconds,
 						maxCycleTime: $maxCycleTime
 			)
-			.onAppear{
-				runButtonState = (plc.status == .running)
-				maxCycleTime = plc.maxCycleTime
-			}
-			.onChange(of: runButtonState, perform: {togglePLCState($0)})
-			.onChange(of: maxCycleTime, perform: {plc.maxCycleTime = $0})
+				.onAppear{
+					runButtonState = (plc.status == .running)
+					maxCycleTime = plc.maxCycleTime
+				}
+				.onChange(of: runButtonState, perform: {togglePLCState($0)})
+				.onChange(of: maxCycleTime, perform: {plc.maxCycleTime = $0})
 			
 			Spacer()
-			SimulatorView(buttonState: $simButtonState)
-				.onAppear{simButtonState = (plc.executionType == .simulated)}
-				.onChange(of: simButtonState, perform: {toggleSimulator($0)})
+			SimulatorView(simButtonState: $simButtonState, hardwareSimButtonState: $hardwareSimButtonState)
+				.onAppear{
+					if case .simulated(let withHardware) = plc.executionType{
+						simButtonState = true
+						hardwareSimButtonState = withHardware
+					}else{
+						simButtonState = false
+						hardwareSimButtonState = false
+					}
+				}
+				.onChange(of: simButtonState, perform: {
+					toggleSimulator($0)
+					hardwareSimButtonState = $0
+				})
+				.onChange(of: hardwareSimButtonState, perform: {
+					if simButtonState{
+						toggleHardwareSimulation($0)
+					}
+				})
 			Spacer()
 		}
 	}
 }
+
 
 extension PLCView{
 	
@@ -77,8 +96,8 @@ extension PLCView{
 					Image(systemName:plcIsRunning ? "play.fill" : "stop.fill")
 						.foregroundColor(plcIsRunning ? .green : .red)
 				})
-				.softToggleStyle(Circle(), padding: 20, pressedEffect: .hard)
-				.frame(width: 80)
+					.softToggleStyle(Circle(), padding: 20, pressedEffect: .hard)
+					.frame(width: 80)
 				
 				Button{ editMaxCycleTime = true } label: {
 					Image(systemName: "clock.arrow.2.circlepath")
@@ -136,11 +155,11 @@ extension PLCView.RunStopView{
 				TextField("", value: $fieldContent,
 						  formatter: NumberFormatter()
 				)
-				.disableAutocorrection(true)
-				.background(fieldColor)
-				.frame(width:80)
-				.multilineTextAlignment(.center)
-				.onAppear{originalMaxCycleTime = maxCycleTime; fieldContent = originalMaxCycleTime}
+					.disableAutocorrection(true)
+					.background(fieldColor)
+					.frame(width:80)
+					.multilineTextAlignment(.center)
+					.onAppear{originalMaxCycleTime = maxCycleTime; fieldContent = originalMaxCycleTime}
 				
 				Text(fieldContentIsValidated ? "⚠️ Low entries may cause the PLC to stop!!!" : "🛑 VALUE OUT OF RANGE!!!")
 				
@@ -156,7 +175,7 @@ extension PLCView.RunStopView{
 						maxCycleTime = fieldContent.copyLimitedBetween(validationRange)
 						editMaxCycleTime = false
 					}.disabled(!fieldContentIsValidated)
-
+					
 				}
 			}
 			.padding()
@@ -167,14 +186,23 @@ extension PLCView.RunStopView{
 extension PLCView{
 	
 	public struct SimulatorView: View {
-		@Binding var buttonState:Bool
+		@Binding var simButtonState:Bool
+		@Binding var hardwareSimButtonState:Bool
 		
 		public var body: some View {
-			
-			Toggle(isOn:$buttonState, label:{
-				Text("Run on simulator")
-					.foregroundColor(.secondary)
-			})
+			VStack{
+				Toggle(isOn:$simButtonState, label:{
+					Text("Run on simulator")
+						.foregroundColor(.secondary)
+				})
+				
+				Toggle(isOn:$hardwareSimButtonState, label:{
+					Text("Simulate hardware")
+						.foregroundColor(.secondary)
+				})
+					.padding(.leading, 50)
+					.disabled(!simButtonState)
+			}
 		}
 	}
 }
