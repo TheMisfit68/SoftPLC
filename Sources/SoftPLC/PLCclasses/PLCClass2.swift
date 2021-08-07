@@ -7,8 +7,6 @@
 import Foundation
 import JVCocoa
 
-
-
 open class PLCClass{
     
     public var plc:SoftPLC! = nil
