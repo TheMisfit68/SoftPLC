@@ -22,10 +22,8 @@ public enum StopReason:String{
 }
 
 public enum ExecutionType{
-	
 	case normal
 	case simulated(withHardware:Bool)
-	
 }
 
 public class SoftPLC:ObservableObject{
