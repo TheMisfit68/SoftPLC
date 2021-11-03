@@ -154,8 +154,8 @@ public class SoftPLC:ObservableObject{
 				self.plcObjects.forEach { instanceName, object in
 					
 					(object as? Parameterizable)?.assignInputParameters()
-					
-					(object as? CyclicRunnable)?.runCycle()
+										
+ 					(object as? CyclicRunnable)?.runCycle()
 					
 					(object as? Parameterizable)?.assignOutputParameters()
 					
