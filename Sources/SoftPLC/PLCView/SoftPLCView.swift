@@ -1,5 +1,5 @@
 //
-//  PLCView.swift
+//  SoftPLCView.swift
 //
 //
 //  Created by Jan Verrept on 24/11/2020.
@@ -10,52 +10,32 @@ import SwiftUI
 import Neumorphic
 import JVCocoa
 
-public struct PLCView: View {
+public struct SoftPLCView: View {
 	@Environment(\.colorScheme) var colorScheme: ColorScheme
-	@ObservedObject var plc:SoftPLC // Always detect changes in the PLCs status
-	
-	@State private var maxCycleTime:TimeInterval = 0
-	@State private var runButtonState:Bool = false // Detect button actions that originated from here
+	@EnvironmentObject private var plcStatus: SoftPLC.Status
+
+ 	@State private var runButtonState:Bool = false // Detect button actions that originated from here
 	@State private var simButtonState:Bool = false // Detect button actions that originated from here
 	@State private var hardwareSimButtonState:Bool = false // Detect button actions that originated from here
-	
-	var stopReason:(String, String){
-		if case let .stopped(reason: reason) = plc.status {
-			var stopReason:(String, String) = (reason.rawValue, "")
-			if reason == .maxCycleTime {
-				stopReason.1 = String(format: "%04d", locale: Locale.current, Int(plc.cycleTimeInMiliSeconds)) + " ms"
-			}
-			return stopReason
-		}
-		return ("", "")
-	}
 	
 	let togglePLCState:(_ newState:Bool)->Void
 	let toggleSimulator:(_ newState:Bool)->Void
 	let toggleHardwareSimulation:(_ newState:Bool)->Void
 	
-	
 	public var body: some View {
 		
 		return VStack{
 			Spacer()
-			RunStopView(buttonState: $runButtonState,
-						plcIsRunning:(plc.status == .running),
-						stopReason: stopReason,
-						cycleTime:plc.cycleTimeInMiliSeconds,
-						maxCycleTime: $maxCycleTime
-			)
+			RunStopView(runButtonState: $runButtonState)
 				.onAppear{
-					runButtonState = (plc.status == .running)
-					maxCycleTime = plc.maxCycleTime
+					runButtonState = (plcStatus.runState == .running)
 				}
 				.onChange(of: runButtonState, perform: {togglePLCState($0)})
-				.onChange(of: maxCycleTime, perform: {plc.maxCycleTime = $0})
 			
 			Spacer()
 			SimulatorView(simButtonState: $simButtonState, hardwareSimButtonState: $hardwareSimButtonState)
 				.onAppear{
-					if case .simulated(let withHardware) = plc.executionType{
+					if case .simulated(let withHardware) = plcStatus.executionType{
 						simButtonState = true
 						hardwareSimButtonState = withHardware
 					}else{
@@ -78,23 +58,32 @@ public struct PLCView: View {
 }
 
 
-extension PLCView{
+extension SoftPLCView{
 	
 	public struct RunStopView: View {
-		@Binding var buttonState:Bool
-		let plcIsRunning:Bool
-		let stopReason:(String, String)
-		let cycleTime:TimeInterval
-		@Binding var maxCycleTime:TimeInterval
+		@EnvironmentObject private var plcStatus: SoftPLC.Status
+		
+		@Binding var runButtonState:Bool
 		@State var editMaxCycleTime:Bool = false
+		
+		var stopReason:(String, String){
+			if case let .stopped(reason: reason) = plcStatus.runState {
+				var stopReason:(String, String) = (reason.rawValue, "")
+				if reason == .maxCycleTime {
+					stopReason.1 = String(format: "%04d", locale: Locale.current, Int(plcStatus.cycleTimeInMiliSeconds)) + " ms"
+				}
+				return stopReason
+			}
+			return ("", "")
+		}
 		
 		public var body: some View {
 			
 			return HStack(){
 				Spacer()
-				Toggle(isOn:$buttonState, label:{
-					Image(systemName:plcIsRunning ? "play.fill" : "stop.fill")
-						.foregroundColor(plcIsRunning ? .green : .red)
+				Toggle(isOn:$runButtonState, label:{
+					Image(systemName:plcStatus.runState == .running ? "play.fill" : "stop.fill")
+						.foregroundColor(plcStatus.runState == .running ? .green : .red)
 				})
 					.softToggleStyle(Circle(), padding: 20, pressedEffect: .hard)
 					.frame(width: 80)
@@ -108,12 +97,12 @@ extension PLCView{
 				.help("Click to adjust\nthe max. cycletime")
 				.sheet(isPresented: $editMaxCycleTime) {
 					
-					MaxCycleTimeSheet(editMaxCycleTime: $editMaxCycleTime, maxCycleTime: $maxCycleTime)
+					MaxCycleTimeSheet(editMaxCycleTime: $editMaxCycleTime)
 					
 				}
 				VStack(){
 					Text(
-						plcIsRunning ? "PLC in RUN!\n[\(String(format: "%04d", locale: Locale.current, Int(cycleTime))) ms]" : "PLC in STOP!\n[\(stopReason.0) \(stopReason.1)]")
+						plcStatus.runState == .running ? "PLC in RUN!\n[\(String(format: "%04d", locale: Locale.current, Int(plcStatus.cycleTimeInMiliSeconds))) ms]" : "PLC in STOP!\n[\(stopReason.0) \(stopReason.1)]")
 						.fontWeight(.bold)
 						.foregroundColor(.secondary)
 						.frame(width: 200, alignment: .leading)
@@ -125,12 +114,12 @@ extension PLCView{
 	}
 }
 
-extension PLCView.RunStopView{
+extension SoftPLCView.RunStopView{
 	
 	public struct MaxCycleTimeSheet: View {
+		@EnvironmentObject private var plcStatus: SoftPLC.Status
 		
 		@Binding var editMaxCycleTime:Bool
-		@Binding var maxCycleTime:TimeInterval
 		
 		@State var originalMaxCycleTime:TimeInterval! = nil
 		@State var fieldContent:TimeInterval = 0
@@ -159,7 +148,7 @@ extension PLCView.RunStopView{
 					.background(fieldColor)
 					.frame(width:80)
 					.multilineTextAlignment(.center)
-					.onAppear{originalMaxCycleTime = maxCycleTime; fieldContent = originalMaxCycleTime}
+					.onAppear{originalMaxCycleTime = plcStatus.maxCycleTime; fieldContent = originalMaxCycleTime}
 				
 				Text(fieldContentIsValidated ? "⚠️ Low entries may cause the PLC to stop!!!" : "🛑 VALUE OUT OF RANGE!!!")
 				
@@ -167,12 +156,12 @@ extension PLCView.RunStopView{
 				HStack{
 					Button("Cancel"){
 						// Reset to the original value
-						maxCycleTime = originalMaxCycleTime
+						plcStatus.maxCycleTime = originalMaxCycleTime
 						editMaxCycleTime = false
 					}
 					Button("OK"){
 						// Limit maxCycleTime between boundaries
-						maxCycleTime = fieldContent.copyLimitedBetween(validationRange)
+						plcStatus.maxCycleTime = fieldContent.copyLimitedBetween(validationRange)
 						editMaxCycleTime = false
 					}.disabled(!fieldContentIsValidated)
 					
@@ -183,9 +172,11 @@ extension PLCView.RunStopView{
 	}
 }
 
-extension PLCView{
+extension SoftPLCView{
 	
 	public struct SimulatorView: View {
+		@EnvironmentObject private var plcStatus: SoftPLC.Status
+
 		@Binding var simButtonState:Bool
 		@Binding var hardwareSimButtonState:Bool
 		
