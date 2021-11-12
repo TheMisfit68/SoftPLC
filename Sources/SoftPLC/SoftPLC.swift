@@ -10,36 +10,10 @@ import Foundation
 import ModbusDriver
 import IOTypes
 
-public enum Status:Equatable{
-	case running
-	case stopped(reason: StopReason)
-}
-
-public enum StopReason:String{
-	case manual
-	case maxCycleTime
-	case ioFault
-}
-
-public enum ExecutionType{
-	case normal
-	case simulated(withHardware:Bool)
-}
-
-public class SoftPLC:ObservableObject{
+public class SoftPLC{
 	
-	public var controlPanel:PLCView!
-	@Published public var executionType:ExecutionType = .simulated(withHardware:true)
-	@Published var status:Status
-	@Published var cycleTimeInMiliSeconds:TimeInterval = 0
-	@Published var maxCycleTime:TimeInterval{
-		didSet{
-			if maxCycleTime != oldValue{
-				plcBackgroundCycle.maxCycleTime = maxCycleTime
-			}
-		}
-	}
-	
+	public var controlPanel:SoftPLCView!
+	public var status:SoftPLC.Status = Status()
 	
 	public typealias Symbol = String
 	public typealias IOList = [[[Symbol?]]]
@@ -60,13 +34,11 @@ public class SoftPLC:ObservableObject{
 	}
 	
 	
-	var plcBackgroundCycle:PLCBackgroundCycle! = nil
+	var backGroundCycle:SoftPLCBackGroundCycle! = nil
 	
 	public init(hardwareConfig:HardwareConfiguration, ioList:IOList, simulator:IOSimulator? = nil){
 		
-		self.status = .stopped(reason: .manual)
-		self.executionType = .normal
-		self.maxCycleTime = 750
+		self.status = Status()
 		
 		self.hardwareConfig = hardwareConfig
 		self.simulator = simulator
@@ -87,9 +59,8 @@ public class SoftPLC:ObservableObject{
 		}
 		
 		self.importIO(list: ioList)
-		self.plcBackgroundCycle = PLCBackgroundCycle(timeInterval: 0.250, mainLoop:{ [weak self] in self?.mainLoop() }, maxCycleTimeInMiliSeconds: self.maxCycleTime)
-		self.controlPanel = PLCView(plc: self, togglePLCState: togglePLCState, toggleSimulator: toggleSimulator, toggleHardwareSimulation: toggleHardwareSimulation)
-		
+		self.backGroundCycle = SoftPLCBackGroundCycle(timeInterval: 0.250, mainLoop:{ [weak self] in self?.mainLoop() }, maxCycleTimeInMiliSeconds: self.status.maxCycleTime)
+		self.controlPanel = SoftPLCView(togglePLCState: togglePLCState, toggleSimulator: toggleSimulator, toggleHardwareSimulation: toggleHardwareSimulation)
 	}
 	
 	func togglePLCState(newState:Bool){
@@ -107,22 +78,22 @@ public class SoftPLC:ObservableObject{
 	func toggleSimulator(newState:Bool){
 		
 		if newState{
-			executionType = .simulated(withHardware:true)
+			status.executionType = .simulated(withHardware:true)
 		}else{
-			executionType = .normal
+			status.executionType = .normal
 		}
 		resetIOFailures()
 		
 	}
 	
 	func toggleHardwareSimulation(newState:Bool){
-			executionType = .simulated(withHardware:newState)
+		status.executionType = .simulated(withHardware:newState)
 	}
 	
 	func resetIOFailures(){
-		if case .simulated(_) = executionType {
+		if case .simulated(_) = status.executionType {
 			simulator?.ioFailure.reset()
-		}else if case .normal = executionType {
+		}else if case .normal = status.executionType {
 			ioDrivers.forEach{$0.ioFailure.reset()}
 		}
 	}
@@ -131,7 +102,7 @@ public class SoftPLC:ObservableObject{
 	
 	func mainLoop()->Void{
 		
-		if case .simulated(let withHardware) = executionType, let simulator = self.simulator{
+		if case .simulated(let withHardware) = status.executionType, let simulator = self.simulator{
 			
 			simulator.readAllInputs()
 			if simulator.ioFailure{ stop(reason: .ioFault) }
@@ -145,17 +116,17 @@ public class SoftPLC:ObservableObject{
 				}
 			}
 			// And don't guard the Maximum Cycle Time while debugging
-			plcBackgroundCycle.numberOfOverruns = 0
+			backGroundCycle.numberOfOverruns = 0
 #endif
 			
 			
-			if self.status == .running{
+			if self.status.runState == .running{
 				
 				self.plcObjects.forEach { instanceName, object in
 					
 					(object as? Parameterizable)?.assignInputParameters()
-										
- 					(object as? CyclicRunnable)?.runCycle()
+					
+					(object as? CyclicRunnable)?.runCycle()
 					
 					(object as? Parameterizable)?.assignOutputParameters()
 					
@@ -165,7 +136,7 @@ public class SoftPLC:ObservableObject{
 			simulator.writeAllOutputs()
 			if simulator.ioFailure{ stop(reason: .ioFault) }
 			
-		}else if case .normal = executionType{
+		}else if case .normal = status.executionType{
 			
 			self.ioDrivers.forEach{
 				$0.readAllInputs()
@@ -173,7 +144,7 @@ public class SoftPLC:ObservableObject{
 			}
 			
 			
-			if self.status == .running{
+			if self.status.runState == .running{
 				
 				self.plcObjects.forEach { instanceName, object in
 					
@@ -198,12 +169,12 @@ public class SoftPLC:ObservableObject{
 	}
 	
 	public func stop(reason:StopReason){
-		plcBackgroundCycle.stop(reason:reason)
+		backGroundCycle.stop(reason:reason)
 		refreshBackgroundInfo()
 	}
 	
 	public func run() {
-		plcBackgroundCycle.run()
+		backGroundCycle.run()
 		refreshBackgroundInfo()
 	}
 	
@@ -239,13 +210,14 @@ public class SoftPLC:ObservableObject{
 		return ioSignal
 	}
 	
+	// MARK: - Populate ViewModel
 	func refreshBackgroundInfo(){
 		// At all times published variables should be changed on the main thread
 		// even if they exist in the background
 		DispatchQueue.main.async {
-			self.status = self.plcBackgroundCycle.status
-			self.cycleTimeInMiliSeconds = self.plcBackgroundCycle.cycleTimeInMiliSeconds
-			self.maxCycleTime = self.plcBackgroundCycle.maxCycleTime
+			self.status.runState = self.backGroundCycle.runState
+			self.status.cycleTimeInMiliSeconds = self.backGroundCycle.cycleTimeInMiliSeconds
+			self.status.maxCycleTime = self.backGroundCycle.maxCycleTime
 		}
 	}
 	

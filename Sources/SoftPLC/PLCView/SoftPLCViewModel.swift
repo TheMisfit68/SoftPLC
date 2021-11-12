@@ -16,7 +16,7 @@ extension SoftPLC{
 			didSet{
 				if maxCycleTime != oldValue{
 					//FIXME: - Reimplement this
-					AppState.shared.plc.backGroundCycle.maxCycleTime = maxCycleTime
+//					AppState.shared.plc.backGroundCycle.maxCycleTime = maxCycleTime
 				}
 			}
 		}

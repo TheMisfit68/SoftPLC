@@ -1,5 +1,5 @@
 //
-//  PlcBackgroundCycle.swift
+//  SoftPLCBackGroundCycle.swift
 //  
 //
 //  Created by Jan Verrept on 22/09/2020.
@@ -8,7 +8,7 @@
 import Foundation
 import JVCocoa
 
-class PLCBackgroundCycle{
+public class SoftPLCBackGroundCycle{
 	
 	private let timeInterval: TimeInterval
 	private let mainLoop:()->Void // Function-pointer to main loop
@@ -49,7 +49,7 @@ class PLCBackgroundCycle{
 			
 			numberOfOverruns += 1
 			guard numberOfOverruns < maxNumberOfOverruns else{
-				stop(reason: .maxCycleTime)
+				stop(reason: SoftPLC.StopReason.maxCycleTime)
 				Debugger.shared.log(debugLevel:.Critical , "Multiple PLC overruns")
 				return
 			}
@@ -61,22 +61,22 @@ class PLCBackgroundCycle{
 	}
 	
 	// MARK: - Cycle Control
-	var status:Status = .stopped(reason:.manual)
+	var runState:SoftPLC.RunState = .stopped(reason:.manual)
 	var cycleTimeInMiliSeconds:TimeInterval = 0
 	var maxCycleTime:TimeInterval
 	var numberOfOverruns:Int = 0
 	var maxNumberOfOverruns:Int
 	
 	func run() {
-		if status != .running {
-			status = .running
+		if runState != .running {
+			runState = .running
 			backgroundTimer.resume()
 		}
 	}
 	
-	func stop(reason:StopReason) {
-		if status == .running{
-			status = .stopped(reason:reason)
+	func stop(reason:SoftPLC.StopReason) {
+		if runState == .running{
+			runState = .stopped(reason:reason)
 			backgroundTimer.suspend()
 		}
 	}
