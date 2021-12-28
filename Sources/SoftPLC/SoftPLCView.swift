@@ -205,6 +205,7 @@ struct SoftPLCView_Previews: PreviewProvider {
 		
 		func setBoolMockup(mockupState:Bool){}
 		func setTimeMockup(mockupInterval:TimeInterval){}
+		
 		let plcPreview = SoftPLCView(
 			viewModel:SoftPLC.Status(),
 			   togglePLCState: setBoolMockup,
@@ -212,15 +213,8 @@ struct SoftPLCView_Previews: PreviewProvider {
 			   toggleSimulator: setBoolMockup,
 			   toggleHardwareSimulation: setBoolMockup
 		   )
-		
-		return Group {
-			plcPreview
-				.environment(\.colorScheme, .light)
-				.previewDisplayName("LightMode")
-			plcPreview
-				.environment(\.colorScheme, .light)
-				.previewDisplayName("LightMode")
-		}
+
+		return	SwiftUIPreview(plcPreview)
 		
 	}
 }

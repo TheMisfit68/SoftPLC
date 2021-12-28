@@ -15,7 +15,7 @@
         "repositoryURL": "https://github.com/TheMisfit68/JVCocoa.git",
         "state": {
           "branch": "master",
-          "revision": "3e6c972fd86dfc1d847d3cf136311e9b5666ba00",
+          "revision": "257a1c63460178125ebc8e0e695a80f0d517eda2",
           "version": null
         }
       },
@@ -24,7 +24,7 @@
         "repositoryURL": "https://github.com/TheMisfit68/ModbusDriver.git",
         "state": {
           "branch": "master",
-          "revision": "f6463cce4046201c5b106118378a41a175839b7b",
+          "revision": "5852b4b9c3389cf7d5586f11a94239b45cce098c",
           "version": null
         }
       },
