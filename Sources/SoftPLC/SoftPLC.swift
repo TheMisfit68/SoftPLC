@@ -12,13 +12,12 @@ import IOTypes
 
 public class SoftPLC{
 	
-	public var controlPanel:SoftPLCView!
-	public var status:SoftPLC.Status = Status()
-	
 	public typealias Symbol = String
 	public typealias IOList = [[[Symbol?]]]
 	public typealias RackNumber = Int
 	public typealias HardwareConfiguration = [RackNumber:[IOModule]]
+	
+	public var controlPanel:SoftPLCView!
 	
 	public var hardwareConfig:HardwareConfiguration = [:]
 	public var ioDrivers:[IODriver] = []
@@ -32,15 +31,24 @@ public class SoftPLC{
 			}
 		}
 	}
-	
-	
-	var backGroundCycle:SoftPLCBackGroundCycle! = nil
+
+	var status:SoftPLC.Status
+	private var backGroundCycle:SoftPLCBackGroundCycle! = nil
 	
 	public init(hardwareConfig:HardwareConfiguration, ioList:IOList, simulator:IOSimulator? = nil){
 		
-		self.status = Status()
+		self.status = SoftPLC.Status()
+		self.controlPanel = SoftPLCView(
+			viewModel:status,
+			togglePLCState: togglePLCState,
+			setMaxCycleTime: setMaxCycleTime,
+			toggleSimulator: toggleSimulator,
+			toggleHardwareSimulation: toggleHardwareSimulation
+		)
+		
 		
 		self.hardwareConfig = hardwareConfig
+		self.importIO(list: ioList)
 		self.simulator = simulator
 		
 		self.hardwareConfig.forEach{ rack, modules in
@@ -58,12 +66,11 @@ public class SoftPLC{
 			
 		}
 		
-		self.importIO(list: ioList)
+		
 		self.backGroundCycle = SoftPLCBackGroundCycle(timeInterval: 0.250, mainLoop:{ [weak self] in self?.mainLoop() }, maxCycleTimeInMiliSeconds: self.status.maxCycleTime)
-		self.controlPanel = SoftPLCView(togglePLCState: togglePLCState, toggleSimulator: toggleSimulator, toggleHardwareSimulation: toggleHardwareSimulation)
 	}
 	
-	func togglePLCState(newState:Bool){
+	public func togglePLCState(_ newState:Bool){
 		
 		if newState{
 			resetIOFailures()
@@ -75,7 +82,14 @@ public class SoftPLC{
 		
 	}
 	
-	func toggleSimulator(newState:Bool){
+	func setMaxCycleTime(_ newValue:TimeInterval){
+		if newValue != status.maxCycleTime{
+			status.maxCycleTime = newValue
+			backGroundCycle.maxCycleTime = newValue
+		}
+	}
+	
+	public func toggleSimulator(_ newState:Bool){
 		
 		if newState{
 			status.executionType = .simulated(withHardware:true)
@@ -86,7 +100,7 @@ public class SoftPLC{
 		
 	}
 	
-	func toggleHardwareSimulation(newState:Bool){
+	public func toggleHardwareSimulation(_ newState:Bool){
 		status.executionType = .simulated(withHardware:newState)
 	}
 	
@@ -223,3 +237,29 @@ public class SoftPLC{
 	
 }
 
+// MARK: - ViewModel
+
+extension SoftPLC{
+	
+	class Status:ObservableObject{
+		
+		@Published public var runState:SoftPLC.RunState = .stopped(reason: .manual)
+		@Published public var cycleTimeInMiliSeconds:TimeInterval = 0
+		@Published public var maxCycleTime:TimeInterval = 750
+		@Published public var executionType:SoftPLC.ExecutionType = .normal
+		
+		public var stopReason:(String, String)?{
+			if case let .stopped(reason: mainReason) = runState {
+				var stopReason:(String, String) = (mainReason.rawValue, "")
+				if mainReason == .maxCycleTime {
+					stopReason.1 = String(format: "%04d", locale: Locale.current, Int(cycleTimeInMiliSeconds)) + " ms"
+				}
+				return stopReason
+			}else{
+				return nil
+			}
+		}
+		
+	}
+	
+}

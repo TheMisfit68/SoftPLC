@@ -26,6 +26,7 @@ public class SoftPLCBackGroundCycle{
 		timer.setEventHandler(handler: { [weak self] in
 			
 			// Prevent the App from napping (and the timer from pausing)
+			
 			AppNapController.shared.keepAlive()
 			
 			let cycleStart = TimeStamp.CurrentTimeStamp

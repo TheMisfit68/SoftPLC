@@ -12,13 +12,17 @@ import JVCocoa
 
 public struct SoftPLCView: View {
 	@Environment(\.colorScheme) var colorScheme: ColorScheme
-	@EnvironmentObject private var plcStatus: SoftPLC.Status
-
- 	@State private var runButtonState:Bool = false // Detect button actions that originated from here
-	@State private var simButtonState:Bool = false // Detect button actions that originated from here
-	@State private var hardwareSimButtonState:Bool = false // Detect button actions that originated from here
+	@ObservedObject var viewModel:SoftPLC.Status
 	
+	// Local bindings
+	@State private var runButtonState:Bool = false
+	@State private var maxCycletime:TimeInterval = 0.0
+	@State private var simButtonState:Bool = false
+	@State private var hardwareSimButtonState:Bool = false
+	
+	// Resulting Actions
 	let togglePLCState:(_ newState:Bool)->Void
+	let setMaxCycleTime:(_ newValue:TimeInterval)->Void
 	let toggleSimulator:(_ newState:Bool)->Void
 	let toggleHardwareSimulation:(_ newState:Bool)->Void
 	
@@ -26,16 +30,19 @@ public struct SoftPLCView: View {
 		
 		return VStack{
 			Spacer()
-			RunStopView(runButtonState: $runButtonState)
+			RunStopView(cycleTimeInMiliSeconds:viewModel.cycleTimeInMiliSeconds, stopReason: viewModel.stopReason, runButtonState: $runButtonState, maxCycleTime: $maxCycletime)
 				.onAppear{
-					runButtonState = (plcStatus.runState == .running)
+					runButtonState = (viewModel.runState == .running)
+					maxCycletime = viewModel.maxCycleTime
 				}
 				.onChange(of: runButtonState, perform: {togglePLCState($0)})
+				.onChange(of: maxCycletime, perform: {setMaxCycleTime($0)})
+			
 			
 			Spacer()
 			SimulatorView(simButtonState: $simButtonState, hardwareSimButtonState: $hardwareSimButtonState)
 				.onAppear{
-					if case .simulated(let withHardware) = plcStatus.executionType{
+					if case .simulated(let withHardware) = viewModel.executionType{
 						simButtonState = true
 						hardwareSimButtonState = withHardware
 					}else{
@@ -61,29 +68,22 @@ public struct SoftPLCView: View {
 extension SoftPLCView{
 	
 	public struct RunStopView: View {
-		@EnvironmentObject private var plcStatus: SoftPLC.Status
+		
+		let cycleTimeInMiliSeconds:TimeInterval
+		let stopReason:(String, String)?
 		
 		@Binding var runButtonState:Bool
-		@State var editMaxCycleTime:Bool = false
+		@Binding var maxCycleTime:TimeInterval
 		
-		var stopReason:(String, String){
-			if case let .stopped(reason: reason) = plcStatus.runState {
-				var stopReason:(String, String) = (reason.rawValue, "")
-				if reason == .maxCycleTime {
-					stopReason.1 = String(format: "%04d", locale: Locale.current, Int(plcStatus.cycleTimeInMiliSeconds)) + " ms"
-				}
-				return stopReason
-			}
-			return ("", "")
-		}
+		@State var editMaxCycleTime:Bool = false
 		
 		public var body: some View {
 			
 			return HStack(){
 				Spacer()
 				Toggle(isOn:$runButtonState, label:{
-					Image(systemName:plcStatus.runState == .running ? "play.fill" : "stop.fill")
-						.foregroundColor(plcStatus.runState == .running ? .green : .red)
+					Image(systemName:runButtonState ? "play.fill" : "stop.fill")
+						.foregroundColor(runButtonState ? .green : .red)
 				})
 					.softToggleStyle(Circle(), padding: 20, pressedEffect: .hard)
 					.frame(width: 80)
@@ -97,12 +97,12 @@ extension SoftPLCView{
 				.help("Click to adjust\nthe max. cycletime")
 				.sheet(isPresented: $editMaxCycleTime) {
 					
-					MaxCycleTimeSheet(editMaxCycleTime: $editMaxCycleTime)
+					MaxCycleTimeSheet(maxCycleTime: $maxCycleTime, editMaxCycleTime: $editMaxCycleTime)
 					
 				}
 				VStack(){
 					Text(
-						plcStatus.runState == .running ? "PLC in RUN!\n[\(String(format: "%04d", locale: Locale.current, Int(plcStatus.cycleTimeInMiliSeconds))) ms]" : "PLC in STOP!\n[\(stopReason.0) \(stopReason.1)]")
+						runButtonState ? "PLC in RUN!\n[\(String(format: "%04d", locale: Locale.current, Int(cycleTimeInMiliSeconds))) ms]" : "PLC in STOP!\n[\(stopReason?.0 ?? "") \(stopReason?.1 ?? "")]")
 						.fontWeight(.bold)
 						.foregroundColor(.secondary)
 						.frame(width: 200, alignment: .leading)
@@ -117,8 +117,8 @@ extension SoftPLCView{
 extension SoftPLCView.RunStopView{
 	
 	public struct MaxCycleTimeSheet: View {
-		@EnvironmentObject private var plcStatus: SoftPLC.Status
 		
+		@Binding var maxCycleTime:TimeInterval
 		@Binding var editMaxCycleTime:Bool
 		
 		@State var originalMaxCycleTime:TimeInterval! = nil
@@ -148,7 +148,7 @@ extension SoftPLCView.RunStopView{
 					.background(fieldColor)
 					.frame(width:80)
 					.multilineTextAlignment(.center)
-					.onAppear{originalMaxCycleTime = plcStatus.maxCycleTime; fieldContent = originalMaxCycleTime}
+					.onAppear{originalMaxCycleTime = maxCycleTime; fieldContent = originalMaxCycleTime}
 				
 				Text(fieldContentIsValidated ? "⚠️ Low entries may cause the PLC to stop!!!" : "🛑 VALUE OUT OF RANGE!!!")
 				
@@ -156,12 +156,12 @@ extension SoftPLCView.RunStopView{
 				HStack{
 					Button("Cancel"){
 						// Reset to the original value
-						plcStatus.maxCycleTime = originalMaxCycleTime
+						maxCycleTime = originalMaxCycleTime
 						editMaxCycleTime = false
 					}
 					Button("OK"){
 						// Limit maxCycleTime between boundaries
-						plcStatus.maxCycleTime = fieldContent.copyLimitedBetween(validationRange)
+						maxCycleTime = fieldContent.copyLimitedBetween(validationRange)
 						editMaxCycleTime = false
 					}.disabled(!fieldContentIsValidated)
 					
@@ -175,8 +175,7 @@ extension SoftPLCView.RunStopView{
 extension SoftPLCView{
 	
 	public struct SimulatorView: View {
-		@EnvironmentObject private var plcStatus: SoftPLC.Status
-
+		
 		@Binding var simButtonState:Bool
 		@Binding var hardwareSimButtonState:Bool
 		
@@ -198,3 +197,38 @@ extension SoftPLCView{
 	}
 }
 
+
+// MARK: - Previews
+struct SoftPLCView_Previews: PreviewProvider {
+	
+	static var previews: some View {
+		
+		func setBoolMockup(mockupState:Bool){}
+		func setTimeMockup(mockupInterval:TimeInterval){}
+		let plcPreview = SoftPLCView(
+			viewModel:SoftPLC.Status(),
+			   togglePLCState: setBoolMockup,
+			   setMaxCycleTime: setTimeMockup,
+			   toggleSimulator: setBoolMockup,
+			   toggleHardwareSimulation: setBoolMockup
+		   )
+		
+		return Group {
+			plcPreview
+				.environment(\.colorScheme, .light)
+				.previewDisplayName("LightMode")
+			plcPreview
+				.environment(\.colorScheme, .light)
+				.previewDisplayName("LightMode")
+			plcPreview
+				.environment(\.colorScheme, .light)
+				.previewDisplayName("LightMode")
+			
+			plcPreview
+				.environment(\.colorScheme, .dark)
+				.previewDisplayName("DarkMode")
+			
+		}
+		
+	}
+}
