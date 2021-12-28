@@ -220,14 +220,6 @@ struct SoftPLCView_Previews: PreviewProvider {
 			plcPreview
 				.environment(\.colorScheme, .light)
 				.previewDisplayName("LightMode")
-			plcPreview
-				.environment(\.colorScheme, .light)
-				.previewDisplayName("LightMode")
-			
-			plcPreview
-				.environment(\.colorScheme, .dark)
-				.previewDisplayName("DarkMode")
-			
 		}
 		
 	}
