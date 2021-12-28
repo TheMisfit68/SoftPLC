@@ -202,16 +202,13 @@ extension SoftPLCView{
 struct SoftPLCView_Previews: PreviewProvider {
 	
 	static var previews: some View {
-		
-		func setBoolMockup(mockupState:Bool){}
-		func setTimeMockup(mockupInterval:TimeInterval){}
-		
+				
 		let plcPreview = SoftPLCView(
 			viewModel:SoftPLC.Status(),
-			   togglePLCState: setBoolMockup,
-			   setMaxCycleTime: setTimeMockup,
-			   toggleSimulator: setBoolMockup,
-			   toggleHardwareSimulation: setBoolMockup
+			togglePLCState: {newState in },
+			setMaxCycleTime: {newValue in },
+			toggleSimulator: {newState in },
+			toggleHardwareSimulation: {newState in }
 		   )
 
 		return	SwiftUIPreview(plcPreview)
