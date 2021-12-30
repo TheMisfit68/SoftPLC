@@ -202,16 +202,8 @@ extension SoftPLCView{
 struct SoftPLCView_Previews: PreviewProvider {
 	
 	static var previews: some View {
-				
-		let plcPreview = SoftPLCView(
-			viewModel:SoftPLC.Status(),
-			togglePLCState: {newState in },
-			setMaxCycleTime: {newValue in },
-			toggleSimulator: {newState in },
-			toggleHardwareSimulation: {newState in }
-		   )
 
-		return	SwiftUIPreview(plcPreview)
+		return	SwiftUIFullPreview(SoftPLCView.preview)
 		
 	}
 }
