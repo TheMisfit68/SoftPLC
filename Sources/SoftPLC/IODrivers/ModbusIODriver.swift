@@ -32,5 +32,3 @@ extension ModbusDriver:IODriver{
 		}
 	}
 }
-
-extension ModbusSimulator:IOSimulator{}

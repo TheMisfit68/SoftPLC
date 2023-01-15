@@ -23,7 +23,7 @@ public class SoftPLC{
 	public var hardwareConfig:HardwareConfiguration = [:]
 	public var ioDrivers:[IODriver] = []
 	public var simulator:IOSimulator?
-	public var variableList:[Symbol:PLCVariable] = [:]
+	public var variableList:[Symbol:SoftPLCVariable] = [:]
 	public var plcObjects:[Symbol:PLCClass] = [:]{
 		didSet{
 			plcObjects.forEach{key, object in
@@ -203,7 +203,7 @@ public class SoftPLC{
 					
 					let ioSymbol = channel ?? ""
 					let ioAddress:[Int] = [rackIndex, moduleIndex,  channelIndex]
-					let ioVariable = PLCVariable(address: ioAddress, symbol: ioSymbol, description: ioSymbol)
+					let ioVariable = SoftPLCVariable(address: ioAddress, symbol: ioSymbol, description: ioSymbol)
 					variableList[ioSymbol] = ioVariable
 					
 				}
@@ -213,7 +213,7 @@ public class SoftPLC{
 	
 	public func signal(ioSymbol:String)->IOSignal?{
 		var ioSignal:IOSignal? = nil
-		if let ioVariable:PLCVariable = variableList[ioSymbol]{
+		if let ioVariable:SoftPLCVariable = variableList[ioSymbol]{
 			
 			let rackNumber = ioVariable.address[0]
 			let moduleNr = ioVariable.address[1]

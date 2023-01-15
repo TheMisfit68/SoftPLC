@@ -18,4 +18,5 @@ public protocol IODriver:AnyObject{
 	func writeAllOutputs()
 	
 }
-public protocol IOSimulator:IODriver {}
+
+public typealias IOSimulator = IODriver
