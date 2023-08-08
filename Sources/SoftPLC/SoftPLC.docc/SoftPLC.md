@@ -5,9 +5,11 @@ A PLC _(Progammable Logic Controller)_ written in Swift.
 
 ## Overview
 
-PLC's are typically rugedized hardware controllers used in industrial environments, to control all sorts of industrial processes and machinery.
-A PLC connects with the outside world using Input- and Output-modules (IO for short) that gets installed alongside its CPU (both digital and analog IO-modules exist).
-Due to its specific field of application a PLC needs to be a super stable platform. Therefor:
+![The SoftPLCView](SoftPLCView.png)
+
+PLC's are typically rugedized hardware controllers used in industrial environments, to control all sorts of industrial processes and machinery.  
+A PLC connects with the outside world using Input- and Output-modules (IO for short) that gets installed alongside its CPU (both digital and analog IO-modules exist).  
+Due to its specific field of application a PLC needs to be a super stable platform. Therefor:  
 - A PLC needs a dedicated simple OS
 - A PLC is programmed with its own small instruction set 
 - A PLC provides strict defined behaviour with little or no side effects allowed.
@@ -22,5 +24,4 @@ Many IO-modules use 'Modbus over Ethernet' as their communication protocol. Modb
 
 ### Essentials
 
-- <doc:README>
 
