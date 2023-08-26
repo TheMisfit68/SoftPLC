@@ -7,6 +7,7 @@
 
 import Foundation
 import JVCocoa
+import OSLog
 
 public class SoftPLCBackGroundCycle{
 	
@@ -45,13 +46,13 @@ public class SoftPLCBackGroundCycle{
 
 		// Stop if PLC gets to slow a number of times
 		if (cycleTimeInMiliSeconds >= maxCycleTime){
-			
-			Debugger.shared.log(debugLevel:.Warning , "Maximum PLC cycletime exceeded")
+            let logger = Logger(subsystem: "be.oneclick.SoftPLC", category: "Backgroundcycle")
+            logger.warning("Maximum PLC cycletime exceeded")
 			
 			numberOfOverruns += 1
 			guard numberOfOverruns < maxNumberOfOverruns else{
 				stop(reason: SoftPLC.StopReason.maxCycleTime)
-				Debugger.shared.log(debugLevel:.Critical , "Multiple PLC overruns")
+                logger.critical("Multiple PLC overruns")
 				return
 			}
 			

@@ -10,6 +10,7 @@ import Foundation
 import ModbusDriver
 import IOTypes
 import JVCocoa
+import OSLog
 
 public class SoftPLC{
 	
@@ -126,7 +127,9 @@ public class SoftPLC{
 			if withHardware{
 				// Overwrite PLC inputs with data of software simulated hardware,
 				// before they get to be used as input parameters
-				Debugger.shared.log(debugLevel:.Custom(icon:"⚙️"),"Simulating hardware")
+                let logger = Logger(subsystem: "be.oneclick.SoftPLC", category: "Hardware simulation")
+                logger.log("⚙️\tSimulating hardware")
+
 				self.plcObjects.forEach { instanceName, object in
 					(object as? Simulateable)?.simulateHardwareInputs()
 				}
