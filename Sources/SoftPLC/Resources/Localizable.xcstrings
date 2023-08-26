@@ -1,0 +1,122 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ""
+          }
+        }
+      }
+    },
+    "⚠️ Low entries may cause the PLC to stop!!!" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⚠️ Te lage waarden kunnen de PLC in stop doen vallen!!!"
+          }
+        }
+      }
+    },
+    "🛑 VALUE OUT OF RANGE!!!" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "🛑 Waarde buiten zijn grenzen!!!"
+          }
+        }
+      }
+    },
+    "Adjust the maximum cycle time of the PLC" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pas de maximum cyclustijd van de PLC aan"
+          }
+        }
+      }
+    },
+    "Cancel" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Annuleer"
+          }
+        }
+      }
+    },
+    "Click to adjust\nthe max. cycletime" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klik om de max. \ncyclustijd aan te passen"
+          }
+        }
+      }
+    },
+    "OK" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        }
+      }
+    },
+    "PLC in RUN!\n[%@ ms]" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PLC in RUN!\n[%1$@ ms]"
+          }
+        }
+      }
+    },
+    "PLC in STOP!\n[%@ %@]" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "PLC in STOP!\n[%1$@ %2$@]"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PLC in STOP!\n[%1$@ %2$@]"
+          }
+        }
+      }
+    },
+    "Run on simulator" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Draai in sumulator"
+          }
+        }
+      }
+    },
+    "Simulate hardware" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Boots elektrische kring na"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}
