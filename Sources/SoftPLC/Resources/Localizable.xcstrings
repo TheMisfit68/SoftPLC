@@ -26,7 +26,7 @@
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "🛑 Waarde buiten zijn grenzen!!!"
+            "value" : "🛑 Ongeldige waarde!!!"
           }
         }
       }
@@ -76,7 +76,7 @@
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PLC in RUN!\n[%1$@ ms]"
+            "value" : "PLC GESTART!\n[%1$@ ms]"
           }
         }
       }

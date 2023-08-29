@@ -99,7 +99,7 @@ extension SoftPLCView{
                     
                 }
                 .buttonStyle(PlainButtonStyle())
-                .help("Click to adjust\nthe max. cycletime")
+                .help( Text("Click to adjust\nthe max. cycletime", bundle: Bundle.module) )
                 .sheet(isPresented: $editMaxCycleTime) {
                     
                     MaxCycleTimeSheet(maxCycleTime: $maxCycleTime, editMaxCycleTime: $editMaxCycleTime)
@@ -107,7 +107,9 @@ extension SoftPLCView{
                 }
                 VStack(){
                     Text(
-                        runButtonState ? "PLC in RUN!\n[\(String(format: "%04d", locale: Locale.current, Int(cycleTimeInMiliSeconds))) ms]" : "PLC in STOP!\n[\(stopReason?.0 ?? "") \(stopReason?.1 ?? "")]")
+                        runButtonState ? "PLC in RUN!\n[\(String(format: "%04d", locale: Locale.current, Int(cycleTimeInMiliSeconds))) ms]" : "PLC in STOP!\n[\(stopReason?.0 ?? "") \(stopReason?.1 ?? "")]",
+                        bundle: Bundle.module
+                    )
                     .fontWeight(.bold)
                     .foregroundColor(.secondary)
                     .frame(width: 200, alignment: .leading)
@@ -140,7 +142,7 @@ extension SoftPLCView.RunStopView{
         public var body: some View {
             
             VStack{
-                Text("Adjust the maximum cycle time of the PLC")
+                Text("Adjust the maximum cycle time of the PLC", bundle: Bundle.module)
                 
                 // FIXME: - Add keyboardtype modifier to this textfield
                 // when it bcomes available for MacOS or
@@ -155,23 +157,28 @@ extension SoftPLCView.RunStopView{
                 .multilineTextAlignment(.center)
                 .onAppear{originalMaxCycleTime = maxCycleTime; fieldContent = originalMaxCycleTime}
                 
-                Text(fieldContentIsValidated ? "⚠️ Low entries may cause the PLC to stop!!!" : "🛑 VALUE OUT OF RANGE!!!")
+                Text(fieldContentIsValidated ? "⚠️ Low entries may cause the PLC to stop!!!" : "🛑 VALUE OUT OF RANGE!!!", bundle: Bundle.module)
                 
                 
                 HStack{
-                    Button("Cancel"){
+                    Button{
                         // Reset to the original value
                         maxCycleTime = originalMaxCycleTime
                         editMaxCycleTime = false
+                    } label: {
+                        Text("Cancel", bundle: Bundle.module)
                     }
-                    Button("OK"){
+                    Button{
                         // Limit maxCycleTime between boundaries
                         maxCycleTime = fieldContent.copyLimitedBetween(validationRange)
                         editMaxCycleTime = false
+                    }label: {
+                        Text("OK", bundle: Bundle.module)
                     }.disabled(!fieldContentIsValidated)
                     
                 }
             }
+            .frame(minWidth: 350)
             .padding()
         }
     }
@@ -187,12 +194,12 @@ extension SoftPLCView{
         public var body: some View {
             VStack{
                 Toggle(isOn:$simButtonState, label:{
-                    Text("Run on simulator")
+                    Text("Run on simulator", bundle: Bundle.module)
                         .foregroundColor(.secondary)
                 })
                 
                 Toggle(isOn:$hardwareSimButtonState, label:{
-                    Text("Simulate hardware")
+                    Text("Simulate hardware", bundle: Bundle.module)
                         .foregroundColor(.secondary)
                 })
                 .padding(.leading, 50)
