@@ -75,6 +75,15 @@ extension SoftPLCView{
         @Binding var runButtonState:Bool
         @Binding var maxCycleTime:TimeInterval
         
+        var spinningAngle:Double{runButtonState ? 360.0 : 0.0}
+        var spinningAnimation:Animation{
+            if runButtonState{
+                Animation.linear(duration: 0.5)
+                    .repeatForever(autoreverses: false)
+            }else{
+                Animation.linear(duration: 0.0)
+            }
+        }
         @State var editMaxCycleTime:Bool = false
         
         public var body: some View {
@@ -94,8 +103,8 @@ extension SoftPLCView{
                         .scaleEffect(x: -1, y: 1) // Flip horizontally
                         .foregroundColor(.secondary)
                         .font(Font.body.weight(.bold))
-                        .rotationEffect(Angle(degrees: runButtonState ? 360.0 : 0.0))
-                        .animation(.linear(duration: runButtonState ? 2 : 0).repeatForever(autoreverses: false))
+                        .rotationEffect(Angle(degrees: spinningAngle))
+                        .animation(spinningAnimation, value: spinningAngle)
                     
                 }
                 .buttonStyle(PlainButtonStyle())
@@ -202,7 +211,7 @@ extension SoftPLCView{
                     Text("Simulate hardware", bundle: Bundle.module)
                         .foregroundColor(.secondary)
                 })
-                .padding(.leading, 50)
+                .offset(x: 50.0, y: 0.0)
                 .disabled(!simButtonState)
             }
         }
