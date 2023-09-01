@@ -245,26 +245,14 @@ public class SoftPLC{
 // MARK: - ViewModel
 
 extension SoftPLC{
-	
-	class Status:ObservableObject{
-		
-		@Published public var runState:SoftPLC.RunState = .stopped(reason: .manual)
-		@Published public var cycleTimeInMiliSeconds:TimeInterval = 0
-		@Published public var maxCycleTime:TimeInterval = 750
-		@Published public var executionType:SoftPLC.ExecutionType = .normal
-		
-		public var stopReason:(String, String)?{
-			if case let .stopped(reason: mainReason) = runState {
-				var stopReason:(String, String) = (mainReason.rawValue, "")
-				if mainReason == .maxCycleTime {
-					stopReason.1 = String(format: "%04d", locale: Locale.current, Int(cycleTimeInMiliSeconds)) + " ms"
-				}
-				return stopReason
-			}else{
-				return nil
-			}
-		}
-		
-	}
-	
+    
+    class Status:ObservableObject{
+        
+        @Published public var runState:SoftPLC.RunState = .stopped(reason: .manual)
+        @Published public var cycleTimeInMiliSeconds:TimeInterval = 0
+        @Published public var maxCycleTime:TimeInterval = 750
+        @Published public var executionType:SoftPLC.ExecutionType = .normal
+        
+    }
+    
 }

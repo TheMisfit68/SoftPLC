@@ -81,18 +81,12 @@
         }
       }
     },
-    "PLC in STOP!\n[%@ %@]" : {
+    "PLC in STOP!\n[%@]" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "PLC in STOP!\n[%1$@ %2$@]"
-          }
-        },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PLC in STOP!\n[%1$@ %2$@]"
+            "value" : "PLC in STOP!\n[%@]"
           }
         }
       }
@@ -102,7 +96,7 @@
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Draai in sumulator"
+            "value" : "Draai in simulator"
           }
         }
       }
