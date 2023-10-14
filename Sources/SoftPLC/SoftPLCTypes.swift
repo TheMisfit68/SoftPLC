@@ -79,7 +79,7 @@ extension SoftPLC{
                 let symbolType = String(localized:"Feedback Enabled", table: "IOSymbolTypes", bundle: .module)            
                 return "\(circuit) \(symbolType)"
             case .feedbackOpening(circuit: let circuit):
-                let symbolType = String(localized:"Feedback Opening", table: "IOSymbolTypes", bundle: .module)            
+                let symbolType = String(localized:"Feedback Opening", table: "IOSymbolTypes", bundle: .module)
                 return "\(circuit) \(symbolType)"
             case .feedbackClosing(circuit: let circuit):
                 let symbolType = String(localized:"Feedback Closing", table: "IOSymbolTypes", bundle: .module)
@@ -94,7 +94,7 @@ extension SoftPLC{
                 let symbolType = String(localized:"Feedback Turning Left", table: "IOSymbolTypes", bundle: .module)            
                 return "\(circuit) \(symbolType)"
             case .feedbackTurningRight(circuit: let circuit):
-                let symbolType = String(localized:"Feedback Turning Right", table: "IOSymbolTypes", bundle: .module)            
+                let symbolType = String(localized:"Feedback Turning Right", table: "IOSymbolTypes", bundle: .module)
                 return "\(circuit) \(symbolType)"
             case .toggle(circuit: let circuit):
                 let symbolType = String(localized:"Toggle", table: "IOSymbolTypes", bundle: .module)            

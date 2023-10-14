@@ -17,12 +17,10 @@ public class EBool{
 	
 	private var booleanVariable:UnsafePointer<Bool>
 	private var booleanValue:Bool = false{
-		
-		
 		didSet{
-			_risingEdge = booleanValue && !oldValue
-			_fallingEdge = oldValue && !booleanValue
-			_anyEdge = booleanValue != oldValue
+			_risingEdge = (booleanValue && !oldValue)
+			_fallingEdge = (oldValue && !booleanValue)
+			_anyEdge = (booleanValue != oldValue)
 		}
 	}	
 	private var _risingEdge:Bool = false
