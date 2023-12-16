@@ -68,7 +68,7 @@ open class SoftPLC{
         }
         
         
-        self.backGroundCycle = SoftPLCBackGroundCycle(timeInterval: 0.250, mainLoop:{ [weak self] in self?.mainLoop() }, maxCycleTimeInMiliSeconds: self.status.maxCycleTime)
+        self.backGroundCycle = SoftPLCBackGroundCycle(timeInterval: 0.150, mainLoop:{ [weak self] in self?.mainLoop() }, maxCycleTimeInMiliSeconds: self.status.maxCycleTime)
     }
     
     public func togglePLCState(_ newState:Bool){
