@@ -5,7 +5,7 @@
 //
 
 import Foundation
-import JVCocoa
+import JVSwift
 
 open class PLCClass{
     

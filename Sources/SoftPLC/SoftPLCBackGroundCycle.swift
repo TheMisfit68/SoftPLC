@@ -6,7 +6,8 @@
 //
 
 import Foundation
-import JVCocoa
+import JVSwift
+import JVSwiftCore
 import OSLog
 
 public class SoftPLCBackGroundCycle{

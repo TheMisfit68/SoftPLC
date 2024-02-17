@@ -7,7 +7,7 @@
 //
 
 import Foundation
-import JVCocoa
+import JVSwift
 
 open class StartStop:PLCClass{
     

@@ -9,7 +9,7 @@
 import Foundation
 import ModbusDriver
 import IOTypes
-import JVCocoa
+import JVSwift
 import OSLog
 
 open class SoftPLC{
