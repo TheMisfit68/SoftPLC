@@ -8,7 +8,7 @@
 import Foundation
 import SwiftUI
 import Neumorphic
-import JVCocoa
+import JVSwift
 
 public struct SoftPLCView: View {
     @Environment(\.colorScheme) var colorScheme: ColorScheme
