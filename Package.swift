@@ -16,7 +16,7 @@ let package = Package(
     dependencies: [
         // Dependencies declare other packages that this package depends on.
 		.package(url: "https://github.com/TheMisfit68/Neumorphic.git", branch: "master"),
-        .package(url: "https://github.com/TheMisfit68/ModbusDriver.git", branch: "master"),
+        .package(url: "https://github.com/TheMisfit68/ModbusDriver.git", branch: "main"),
 		.package(url: "https://github.com/TheMisfit68/JVSwiftCore.git", branch: "main"),
     ],
     targets: [
