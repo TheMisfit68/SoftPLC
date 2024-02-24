@@ -5,7 +5,7 @@
 //
 
 import Foundation
-import JVSwift
+import JVSwiftCore
 
 open class PLCClass{
     

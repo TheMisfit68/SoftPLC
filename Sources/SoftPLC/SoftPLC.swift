@@ -7,10 +7,10 @@
 //
 
 import Foundation
+import OSLog
+import JVSwiftCore
 import ModbusDriver
 import IOTypes
-import JVSwift
-import OSLog
 
 open class SoftPLC{
     

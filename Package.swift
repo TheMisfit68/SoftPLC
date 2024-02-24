@@ -15,9 +15,9 @@ let package = Package(
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
+		.package(url: "https://github.com/TheMisfit68/Neumorphic.git", branch: "master"),
         .package(url: "https://github.com/TheMisfit68/ModbusDriver.git", branch: "master"),
-        .package(url: "https://github.com/TheMisfit68/Neumorphic.git", branch: "master"),
-		.package(url: "https://github.com/TheMisfit68/JVSwift.git", branch: "master"),
+		.package(url: "https://github.com/TheMisfit68/JVSwiftCore.git", branch: "main"),
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
@@ -25,9 +25,9 @@ let package = Package(
         .target(
             name: "SoftPLC",
             dependencies: [
+				"Neumorphic",
                 "ModbusDriver",
-                "Neumorphic",
-				"JVSwift",
+				"JVSwiftCore",
             ]
         )
     ]

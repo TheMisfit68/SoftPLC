@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import JVSwiftCore
 import ModbusDriver
 import IOTypes
 

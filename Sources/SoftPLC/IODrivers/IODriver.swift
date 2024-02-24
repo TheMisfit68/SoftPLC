@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import JVSwiftCore
 import IOTypes
 
 // Define PLC-types

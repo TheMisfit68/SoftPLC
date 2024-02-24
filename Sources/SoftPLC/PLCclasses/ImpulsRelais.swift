@@ -6,7 +6,10 @@
 //
 
 import Foundation
+import JVSwiftCore
 
+/// A PLCClass equivalent to impulsrelais,
+/// as used in electrical engineering
 open class ImpulsRelais:StartStop{
     
     public override init(){

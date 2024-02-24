@@ -7,7 +7,7 @@
 //
 
 import Foundation
-
+import JVSwiftCore
 
 open class LeftRight:PLCClass{
 //    

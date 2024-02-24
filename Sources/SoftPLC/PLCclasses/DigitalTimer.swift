@@ -7,7 +7,15 @@
 //
 
 import Foundation
+import JVSwiftCore
 
+/// A PLCClass to create a digital timer,
+/// a used in electrical engineering
+/// There are 4 types of digital timers:
+/// - OnDelay
+/// - OffDelay
+/// - PulsLimition
+/// - ExactPuls
 open class DigitalTimer:PLCClass{
 	
 	private var workItem: DispatchWorkItem?
@@ -48,6 +56,8 @@ open class DigitalTimer:PLCClass{
 
 extension DigitalTimer{
 	
+	/// Sets the timers output if the input remains high during a set time
+	/// Resets the output again as soon as the input goes low
 	open class OnDelay:DigitalTimer{
 		
 		public var action:() -> Void
@@ -85,6 +95,8 @@ extension DigitalTimer{
 
 extension DigitalTimer{
 	
+	/// Sets the timers output als long as the timers input is high,
+	/// The output remains high during the set time after the input goes low
 	open class OffDelay:DigitalTimer{
 		
 		public override var input:Bool {
@@ -109,6 +121,8 @@ extension DigitalTimer{
 
 extension DigitalTimer{
 	
+	/// Sets the timers output als long as the timers input is high,
+	/// but never longer then the set time
 	open class PulsLimition:DigitalTimer{
 		
 		public override var input:Bool {
@@ -134,6 +148,8 @@ extension DigitalTimer{
 
 extension DigitalTimer{
 	
+	/// Will create a puls on the timers output with a fixed length,
+	/// regardless of wheter the input remains active during the set time
 	open class ExactPuls:DigitalTimer{
 		
 		public override var input:Bool {

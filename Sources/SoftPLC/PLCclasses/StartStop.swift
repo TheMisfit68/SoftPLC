@@ -7,8 +7,10 @@
 //
 
 import Foundation
-import JVSwift
+import JVSwiftCore
 
+/// A PLCClass to control a start-stop function,
+/// as used in electrical engineering
 open class StartStop:PLCClass{
     
     public internal(set) var output:Bool = false
