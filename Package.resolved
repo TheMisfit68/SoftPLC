@@ -1,43 +1,50 @@
 {
-  "object": {
-    "pins": [
-      {
-        "package": "ClibModbus",
-        "repositoryURL": "https://github.com/TheMisfit68/ClibModbus.git",
-        "state": {
-          "branch": "master",
-          "revision": "af52333a3a54b2727975d12d995d1d91c612236f",
-          "version": null
-        }
-      },
-      {
-        "package": "JVCocoa",
-        "repositoryURL": "https://github.com/TheMisfit68/JVCocoa.git",
-        "state": {
-          "branch": "master",
-          "revision": "809292fdf57b39b29c64c5e8fa6d97943640fad5",
-          "version": null
-        }
-      },
-      {
-        "package": "ModbusDriver",
-        "repositoryURL": "https://github.com/TheMisfit68/ModbusDriver.git",
-        "state": {
-          "branch": "master",
-          "revision": "747fd9a0fb6eb37d824fec75f05e2f1aac1c6e32",
-          "version": null
-        }
-      },
-      {
-        "package": "Neumorphic",
-        "repositoryURL": "https://github.com/TheMisfit68/neumorphic.git",
-        "state": {
-          "branch": "master",
-          "revision": "3fa56e844a5e375ff3d38e3c770886bcc949f6f5",
-          "version": null
-        }
+  "pins" : [
+    {
+      "identity" : "clibmodbus",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/TheMisfit68/ClibModbus.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "2b87ee56760818337534c52f2c28b111a52aa614"
       }
-    ]
-  },
-  "version": 1
+    },
+    {
+      "identity" : "jvscripting",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/TheMisfit68/JVScripting.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "6c7300f429327525f38ac7f9ebeab2b74d3870b2"
+      }
+    },
+    {
+      "identity" : "jvswiftcore",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/TheMisfit68/JVSwiftCore.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "5bc0c7fb8851aa47b7589f096da86786585b7295"
+      }
+    },
+    {
+      "identity" : "modbusdriver",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/TheMisfit68/ModbusDriver.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "06d667c3c839c3bd053aae3682f5f350169c4998"
+      }
+    },
+    {
+      "identity" : "neumorphic",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/TheMisfit68/Neumorphic.git",
+      "state" : {
+        "branch" : "master",
+        "revision" : "3fa56e844a5e375ff3d38e3c770886bcc949f6f5"
+      }
+    }
+  ],
+  "version" : 2
 }
