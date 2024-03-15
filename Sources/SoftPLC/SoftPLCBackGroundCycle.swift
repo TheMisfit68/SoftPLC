@@ -51,7 +51,7 @@ public class SoftPLCBackGroundCycle{
 			
 			numberOfOverruns += 1
 			guard numberOfOverruns < maxNumberOfOverruns else{
-				stop(reason: SoftPLC.StopReason.maxCycleTime)
+				stop(reason: StopReason.maxCycleTime)
                 logger.critical("Multiple PLC overruns")
 				return
 			}
@@ -63,7 +63,7 @@ public class SoftPLCBackGroundCycle{
 	}
 	
 	// MARK: - Cycle Control
-	var runState:SoftPLC.RunState = .stopped(reason:.manual)
+	var runState:RunState = .stopped(reason:.manual)
 	var cycleTimeInMiliSeconds:TimeInterval = 0
 	var maxCycleTime:TimeInterval
 	var numberOfOverruns:Int = 0
@@ -76,7 +76,7 @@ public class SoftPLCBackGroundCycle{
 		}
 	}
 	
-	func stop(reason:SoftPLC.StopReason) {
+	func stop(reason:StopReason) {
 		if runState == .running{
 			runState = .stopped(reason:reason)
 			backgroundTimer.suspend()

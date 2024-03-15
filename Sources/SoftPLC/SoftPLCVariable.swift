@@ -10,7 +10,7 @@ import Foundation
 public struct SoftPLCVariable{
     
     public var address:[Int] // IO-variables wil recieve 3 entries, Racknumber, Modulenumber and Channelnumber
-    public var symbol:SoftPLC.IOSymbol
+    public var symbol:IOSymbol
     public var description:String
     
 }

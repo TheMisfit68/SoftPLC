@@ -33,7 +33,7 @@ open class SoftPLC{
         }
     }
     
-    var status:SoftPLC.Status
+    var status:Status
     private var backGroundCycle:SoftPLCBackGroundCycle! = nil
     
     public init(hardwareConfig:HardwareConfiguration, ioList:IOList, simulator:IOSimulator? = nil){
@@ -248,10 +248,10 @@ extension SoftPLC{
     
     class Status:ObservableObject{
         
-        @Published public var runState:SoftPLC.RunState = .stopped(reason: .manual)
+        @Published public var runState:RunState = .stopped(reason: .manual)
         @Published public var cycleTimeInMiliSeconds:TimeInterval = 0
         @Published public var maxCycleTime:TimeInterval = 750
-        @Published public var executionType:SoftPLC.ExecutionType = .normal
+        @Published public var executionType:ExecutionType = .normal
         
     }
     
