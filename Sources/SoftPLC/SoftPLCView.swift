@@ -11,7 +11,7 @@ import Neumorphic
 
 public struct SoftPLCView: View {
     @Environment(\.colorScheme) var colorScheme: ColorScheme
-    @ObservedObject var viewModel:SoftPLC.Status
+    @State var viewModel:SoftPLC.ViewModel
     
     // Local bindings
     @State private var runButtonState:Bool = false
@@ -47,8 +47,8 @@ public struct SoftPLCView: View {
                     runButtonState = (viewModel.runState == .running)
                     maxCycletime = viewModel.maxCycleTime
                 }
-                .onChange(of: runButtonState, perform: {togglePLCState($0)})
-                .onChange(of: maxCycletime, perform: {setMaxCycleTime($0)})
+                .onChange(of: runButtonState){ togglePLCState(runButtonState) }
+				.onChange(of: maxCycletime){ setMaxCycleTime(maxCycletime) }
             
             
             Spacer()
@@ -62,15 +62,15 @@ public struct SoftPLCView: View {
                         hardwareSimButtonState = false
                     }
                 }
-                .onChange(of: simButtonState, perform: {
-                    toggleSimulator($0)
-                    hardwareSimButtonState = $0
-                })
-                .onChange(of: hardwareSimButtonState, perform: {
+                .onChange(of: simButtonState){
+                    toggleSimulator(simButtonState)
+                    hardwareSimButtonState = simButtonState
+                }
+                .onChange(of: hardwareSimButtonState){
                     if simButtonState{
-                        toggleHardwareSimulation($0)
+                        toggleHardwareSimulation(hardwareSimButtonState)
                     }
-                })
+                }
             Spacer()
         }
     }

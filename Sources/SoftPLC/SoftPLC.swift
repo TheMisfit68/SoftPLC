@@ -33,14 +33,14 @@ open class SoftPLC{
         }
     }
     
-    var status:Status
+	var viewModel:SoftPLC.ViewModel
     private var backGroundCycle:SoftPLCBackGroundCycle! = nil
     
     public init(hardwareConfig:HardwareConfiguration, ioList:IOList, simulator:IOSimulator? = nil){
         
-        self.status = SoftPLC.Status()
+        self.viewModel = SoftPLC.ViewModel()
         self.controlPanel = SoftPLCView(
-            viewModel:status,
+            viewModel:viewModel,
             togglePLCState: togglePLCState,
             setMaxCycleTime: setMaxCycleTime,
             toggleSimulator: toggleSimulator,
@@ -68,7 +68,7 @@ open class SoftPLC{
         }
         
         
-        self.backGroundCycle = SoftPLCBackGroundCycle(timeInterval: 0.150, mainLoop:{ [weak self] in self?.mainLoop() }, maxCycleTimeInMiliSeconds: self.status.maxCycleTime)
+        self.backGroundCycle = SoftPLCBackGroundCycle(timeInterval: 0.250, mainLoop:{ [weak self] in self?.mainLoop() }, maxCycleTimeInMiliSeconds: self.viewModel.maxCycleTime)
     }
     
     public func togglePLCState(_ newState:Bool){
@@ -84,8 +84,8 @@ open class SoftPLC{
     }
     
     func setMaxCycleTime(_ newValue:TimeInterval){
-        if newValue != status.maxCycleTime{
-            status.maxCycleTime = newValue
+        if newValue != viewModel.maxCycleTime{
+            viewModel.maxCycleTime = newValue
             backGroundCycle.maxCycleTime = newValue
         }
     }
@@ -93,22 +93,22 @@ open class SoftPLC{
     public func toggleSimulator(_ newState:Bool){
         
         if newState{
-            status.executionType = .simulated(withHardware:true)
+            viewModel.executionType = .simulated(withHardware:true)
         }else{
-            status.executionType = .normal
+            viewModel.executionType = .normal
         }
         resetIOFailures()
         
     }
     
     public func toggleHardwareSimulation(_ newState:Bool){
-        status.executionType = .simulated(withHardware:newState)
+        viewModel.executionType = .simulated(withHardware:newState)
     }
     
     func resetIOFailures(){
-        if case .simulated(_) = status.executionType {
+        if case .simulated(_) = viewModel.executionType {
             simulator?.ioFailure.reset()
-        }else if case .normal = status.executionType {
+        }else if case .normal = viewModel.executionType {
             ioDrivers.forEach{$0.ioFailure.reset()}
         }
     }
@@ -117,7 +117,7 @@ open class SoftPLC{
     
     func mainLoop()->Void{
         
-        if case .simulated(let withHardware) = status.executionType, let simulator = self.simulator{
+        if case .simulated(let withHardware) = viewModel.executionType, let simulator = self.simulator{
             
             simulator.readAllInputs()
             if simulator.ioFailure{ stop(reason: .ioFault) }
@@ -138,7 +138,7 @@ open class SoftPLC{
 #endif
             
             
-            if self.status.runState == .running{
+            if self.viewModel.runState == .running{
                 
                 self.plcObjects.forEach { instanceName, object in
                     
@@ -153,8 +153,12 @@ open class SoftPLC{
             
             simulator.writeAllOutputs()
             if simulator.ioFailure{ stop(reason: .ioFault) }
+			
+			// TODO: - evaluate the need for this code after fixing the windowcoverings
+			// Mimic the slowness of the real IO-modules
+//			Thread.sleep(forTimeInterval: 0.100)
             
-        }else if case .normal = status.executionType{
+        }else if case .normal = viewModel.executionType{
             
             self.ioDrivers.forEach{
                 $0.readAllInputs()
@@ -162,7 +166,7 @@ open class SoftPLC{
             }
             
             
-            if self.status.runState == .running{
+            if self.viewModel.runState == .running{
                 
                 self.plcObjects.forEach { instanceName, object in
                     
@@ -234,25 +238,10 @@ open class SoftPLC{
         // At all times published variables should be changed on the main thread
         // even if they exist in the background
         DispatchQueue.main.async {
-            self.status.runState = self.backGroundCycle.runState
-            self.status.cycleTimeInMiliSeconds = self.backGroundCycle.cycleTimeInMiliSeconds
-            self.status.maxCycleTime = self.backGroundCycle.maxCycleTime
+            self.viewModel.runState = self.backGroundCycle.runState
+            self.viewModel.cycleTimeInMiliSeconds = self.backGroundCycle.cycleTimeInMiliSeconds
+            self.viewModel.maxCycleTime = self.backGroundCycle.maxCycleTime
         }
-    }
-    
-}
-
-// MARK: - ViewModel
-
-extension SoftPLC{
-    
-    class Status:ObservableObject{
-        
-        @Published public var runState:RunState = .stopped(reason: .manual)
-        @Published public var cycleTimeInMiliSeconds:TimeInterval = 0
-        @Published public var maxCycleTime:TimeInterval = 750
-        @Published public var executionType:ExecutionType = .normal
-        
     }
     
 }

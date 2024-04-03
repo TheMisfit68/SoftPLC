@@ -10,7 +10,7 @@ import SwiftUI
 extension SoftPLCView {
 	
 	public static let preview = SoftPLCView(
-		viewModel:SoftPLC.Status(),
+		viewModel:SoftPLC.ViewModel(),
 		togglePLCState:  {newState in },
 		setMaxCycleTime: {newValue in },
 		toggleSimulator: {newState in },
