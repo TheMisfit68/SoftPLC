@@ -39,7 +39,6 @@ public struct SoftPLCView: View {
     let toggleHardwareSimulation:(_ newState:Bool)->Void
     
     public var body: some View {
-        print ("SoftPLCView body - \(viewModel.runState)")
         return VStack{
             Spacer()
             RunStopView(cycleTimeInMiliSeconds:viewModel.cycleTimeInMiliSeconds, stopReason: stopReason, runButtonState: $runButtonState, maxCycleTime: $maxCycletime)
@@ -50,7 +49,6 @@ public struct SoftPLCView: View {
 			// Sync the runButtonState with the PLC's runstate,
 			// because the PLC can be started or stopped by other means than this view, like an IOFault
 				.onChange(of: viewModel.runState) { runButtonState = (viewModel.runState == .running) }
-				.onChange(of: runButtonState){ togglePLCState(runButtonState) }
                 .onChange(of: runButtonState){ togglePLCState(runButtonState) }
 				.onChange(of: maxCycletime){ setMaxCycleTime(maxCycletime) }
 		
