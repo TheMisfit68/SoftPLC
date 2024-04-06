@@ -11,9 +11,11 @@ import OSLog
 import JVSwiftCore
 import ModbusDriver
 import IOTypes
+import OSLog
 
 open class SoftPLC{
-    
+	let logger = Logger(subsystem: "be.oneclick.SoftPLC", category:"SoftPLC")
+
     public typealias IOList = [[[IOSymbol?]]]
     public typealias RackNumber = Int
     public typealias HardwareConfiguration = [RackNumber:[IOModule]]
@@ -116,7 +118,7 @@ open class SoftPLC{
     // MARK: - Main PLC Cycle
     
     func mainLoop()->Void{
-        
+
         if case .simulated(let withHardware) = viewModel.executionType, let simulator = self.simulator{
             
             simulator.readAllInputs()
@@ -126,7 +128,6 @@ open class SoftPLC{
             if withHardware{
                 // Overwrite PLC inputs with data of software simulated hardware,
                 // before they get to be used as input parameters
-                let logger = Logger(subsystem: "be.oneclick.SoftPLC", category: "Hardware simulation")
                 logger.log("⚙️\tSimulating hardware")
                 
                 self.plcObjects.forEach { instanceName, object in
@@ -153,10 +154,6 @@ open class SoftPLC{
             
             simulator.writeAllOutputs()
             if simulator.ioFailure{ stop(reason: .ioFault) }
-			
-			// TODO: - evaluate the need for this code after fixing the windowcoverings
-			// Mimic the slowness of the real IO-modules
-//			Thread.sleep(forTimeInterval: 0.100)
             
         }else if case .normal = viewModel.executionType{
             
@@ -185,19 +182,15 @@ open class SoftPLC{
             }
             
         }
-        
         refreshBackgroundInfo()
-        
     }
     
     public func stop(reason:StopReason){
         backGroundCycle.stop(reason:reason)
-        refreshBackgroundInfo()
     }
     
     public func run() {
         backGroundCycle.run()
-        refreshBackgroundInfo()
     }
     
     
@@ -235,7 +228,7 @@ open class SoftPLC{
     
     // MARK: - Populate ViewModel
     func refreshBackgroundInfo(){
-        // At all times published variables should be changed on the main thread
+        // At all times observable variables should be changed on the main thread
         // even if they exist in the background
         DispatchQueue.main.async {
             self.viewModel.runState = self.backGroundCycle.runState
