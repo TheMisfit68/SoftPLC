@@ -28,7 +28,6 @@ public class SoftPLCBackGroundCycle{
 		timer.setEventHandler(handler: { [weak self] in
 			
 			// Prevent the App from napping (and the timer from pausing)
-			
 			AppNapController.shared.keepAlive()
 			
 			let cycleStart = TimeStamp.CurrentTimeStamp
@@ -57,7 +56,7 @@ public class SoftPLCBackGroundCycle{
 			}
 			
 		}else{
-			numberOfOverruns = 0 // Reset cunt when the cycletime normalises again
+			numberOfOverruns = 0 // Reset count when the cycletime normalises again
 		}
 		
 	}
@@ -71,15 +70,15 @@ public class SoftPLCBackGroundCycle{
 	
 	func run() {
 		if runState != .running {
-			runState = .running
 			backgroundTimer.resume()
+			runState = .running
 		}
 	}
 	
 	func stop(reason:StopReason) {
 		if runState == .running{
-			runState = .stopped(reason:reason)
 			backgroundTimer.suspend()
+			runState = .stopped(reason:reason)
 		}
 	}
 	
