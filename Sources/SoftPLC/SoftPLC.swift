@@ -13,8 +13,7 @@ import ModbusDriver
 import IOTypes
 import OSLog
 
-open class SoftPLC{
-	let logger = Logger(subsystem: "be.oneclick.SoftPLC", category:"SoftPLC")
+open class SoftPLC:Loggable{
 
     public typealias IOList = [[[IOSymbol?]]]
     public typealias RackNumber = Int
@@ -128,7 +127,7 @@ open class SoftPLC{
             if withHardware{
                 // Overwrite PLC inputs with data of software simulated hardware,
                 // before they get to be used as input parameters
-                logger.log("⚙️\tSimulating hardware")
+				SoftPLC.logger.log("⚙️\tSimulating hardware")
                 
                 self.plcObjects.forEach { instanceName, object in
                     (object as? Simulateable)?.simulateHardwareInputs()

@@ -9,8 +9,7 @@ import Foundation
 import OSLog
 import JVSwiftCore
 
-public class SoftPLCBackGroundCycle{
-	let logger = Logger(subsystem: "be.oneclick.SoftPLC", category: "Backgroundcycle")
+public class SoftPLCBackGroundCycle:Loggable{
 	
 	private let timeInterval: TimeInterval
 	private let mainLoop:()->Void // Function-pointer to main loop
@@ -46,12 +45,12 @@ public class SoftPLCBackGroundCycle{
 
 		// Stop if PLC gets to slow a number of times
 		if (cycleTimeInMiliSeconds >= maxCycleTime){
-            logger.warning("Maximum PLC cycletime exceeded")
+			SoftPLCBackGroundCycle.logger.warning("Maximum PLC cycletime exceeded")
 			
 			numberOfOverruns += 1
 			guard numberOfOverruns < maxNumberOfOverruns else{
 				stop(reason: StopReason.maxCycleTime)
-                logger.critical("Multiple PLC overruns")
+				SoftPLCBackGroundCycle.logger.critical("Multiple PLC overruns")
 				return
 			}
 			
