@@ -1,4 +1,12 @@
 # ``SoftPLC``
+@Metadata {
+	@PageKind(article)
+	@PageImage(
+			   purpose: icon, 
+			   source: "SoftPLCView", 
+			   alt: "The Main PLC dashboard")
+	@PageColor(gray)
+}
 
 A PLC _(Progammable Logic Controller)_ written in Swift.
 
