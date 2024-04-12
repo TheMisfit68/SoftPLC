@@ -10,3 +10,4 @@ To prevent any retain cycles, the objects should be made weak like a delegate is
 - [ ] add counters
 - [ ] Unit test against duplicated PLC-variables
 - [ ] Migrate variable list to a dbase
+- [ ] Complete DocC files
