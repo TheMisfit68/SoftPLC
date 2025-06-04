@@ -30,7 +30,7 @@ let package = Package(
                 "ModbusDriver",
 				"JVSwiftCore",
             ],
-			resources: [.copy("Resources")]
+			resources: [.process("Resources")]
         )
     ]
 )
