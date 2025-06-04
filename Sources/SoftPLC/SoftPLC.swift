@@ -189,6 +189,7 @@ open class SoftPLC:Loggable{
     }
     
     public func run() {
+		resetIOFailures()
         backGroundCycle.run()
     }
     
