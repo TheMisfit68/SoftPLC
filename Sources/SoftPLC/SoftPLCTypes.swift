@@ -7,12 +7,12 @@
 
 import Foundation
 
-public enum RunState:Equatable{
+public enum RunState:Equatable, Sendable{
 	case running
 	case stopped(reason: StopReason)
 }
 
-public enum StopReason:String{
+public enum StopReason:String,Sendable{
 	case manual
 	case maxCycleTime
 	case ioFault

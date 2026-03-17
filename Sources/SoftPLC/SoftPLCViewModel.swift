@@ -10,7 +10,8 @@ import Observation
 
 extension SoftPLC{
 	
-	@Observable class ViewModel{
+	@Observable
+	public class ViewModel{
 		
 		var runState:RunState = .stopped(reason: .manual)
 		var cycleTimeInMiliSeconds:TimeInterval = 0
@@ -20,3 +21,6 @@ extension SoftPLC{
 	}
 	
 }
+
+
+	

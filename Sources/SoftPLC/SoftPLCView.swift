@@ -18,6 +18,21 @@ public struct SoftPLCView: View {
     @State private var maxCycletime:TimeInterval = 0.0
     @State private var simButtonState:Bool = false
     @State private var hardwareSimButtonState:Bool = false
+	
+	public init(
+		viewModel: SoftPLC.ViewModel,
+		togglePLCState: @escaping (_ newState:Bool)->Void,
+		setMaxCycleTime: @escaping (_ newValue:TimeInterval)->Void,
+	    toggleSimulator: @escaping (_ newState:Bool)->Void,
+		toggleHardwareSimulation: @escaping (_ newState:Bool)->Void
+	) {
+		self.viewModel = viewModel
+		self.togglePLCState = togglePLCState
+		self.setMaxCycleTime = setMaxCycleTime
+		self.toggleSimulator = toggleSimulator
+		self.toggleHardwareSimulation = toggleHardwareSimulation
+	}
+		
     
     private var stopReason:String?{
         if case let .stopped(reason: mainReason) = viewModel.runState {
