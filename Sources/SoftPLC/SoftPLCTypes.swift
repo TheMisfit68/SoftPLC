@@ -23,6 +23,13 @@ public enum ExecutionType{
 	case simulated(withHardware:Bool)
 }
 
+public protocol IODriver: Sendable {
+	func readAllInputs() async throws
+	func writeAllOutputs() async throws
+}
+
+public typealias IOSimulator = IODriver
+
 
 public enum IOSymbol:Hashable{
 	
@@ -121,5 +128,3 @@ public enum IOSymbol:Hashable{
 	}
 	
 }
-
-
