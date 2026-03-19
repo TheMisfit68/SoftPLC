@@ -132,8 +132,6 @@ open class SoftPLC: Loggable {
     }
     
     public func executePLCObjectsCycle() async {
-        guard viewModel.runState == .running else { return }
-        
         plcObjects.forEach { _, object in
             (object as? Parameterizable)?.assignInputParameters()
             (object as? CyclicRunnable)?.runCycle()
@@ -250,4 +248,3 @@ extension SoftPLC {
     }
     
 }
-
