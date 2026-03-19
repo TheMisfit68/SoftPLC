@@ -81,6 +81,9 @@ open class SoftPLC: Loggable {
     public func setMaxCycleTime(_ newValue: TimeInterval) {
         guard newValue != viewModel.maxCycleTime else { return }
         viewModel.maxCycleTime = newValue
+		Task {
+			await backGroundCycle.setMaxCycleTime(newValue)
+		}
     }
     
     // MARK: - simulatedHardware & IO Failures
@@ -247,3 +250,4 @@ extension SoftPLC {
     }
     
 }
+

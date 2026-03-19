@@ -1,6 +1,6 @@
 # SoftPLC ToDo
 
-Change IODriver from AnyObject to protocol dat has realAll methods
+Check if the backgroundcycle and SoftPLC still need to be actors no the entire IO-level is actor based.
 
 - [ ] Migrate the configuration of the PLC to a SwiftData Model and make the PLC configurable by an external process.
 - [ ] Make the PLC and it's configuration into a standalone process that can be run indipendently (to improve isolation and stability), while maintaining optimal performance on a multi-core system. 
