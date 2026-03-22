@@ -10,6 +10,7 @@ import OSLog
 import JVSwiftCore
 import IOTypes
 import MoxaDriver
+import MQTTNIO
 
 @MainActor
 open class SoftPLC: Loggable {
@@ -23,6 +24,24 @@ open class SoftPLC: Loggable {
     
     public let hardwareConfig: HardwareConfiguration
     public let simulatedHardware: HardwareConfiguration?
+    public var mqttClient: MQTTNIO.MQTTClient? = nil
+    
+    // Resolve the hardware configuration that is currently active for this cycle.
+    private var simulationMode: Bool {
+        if case .simulated(_) = viewModel.executionType {
+            return true
+        } else {
+            return false
+        }
+    }
+    private var activeHardwareConfig: HardwareConfiguration {
+        if simulationMode, let simulatedHardware = self.simulatedHardware {
+            return simulatedHardware
+        } else {
+            return hardwareConfig
+        }
+    }
+    
     public var variableList: [IOSymbol: SoftPLCVariable] = [:]
     public var plcObjects: [String: PLCClass] = [:] {
         didSet {
@@ -33,13 +52,22 @@ open class SoftPLC: Loggable {
         }
     }
     
-    private var moduleImages: [RackNumber: [PLCValues]] = [:]
+    public func addObject(_ object: PLCClass) {
+        guard object.instanceName.isEmpty == false else { return }
+        object.plc = self
+        plcObjects[object.instanceName] = object
+    }
+    
+    private var inputImage: [RackNumber: [PLCValues]] = [:]
+    private var outputImage: [RackNumber: [PLCValues]] = [:]
     private var backGroundCycle: SoftPLC.BackGroundCycle! = nil
     
     public init(hardwareConfig: HardwareConfiguration, ioList: IOList, simulatedHardware: HardwareConfiguration? = nil) {
         self.viewModel = SoftPLC.ViewModel()
         self.hardwareConfig = hardwareConfig
         self.simulatedHardware = simulatedHardware
+        self.inputImage = Self.makeInitialImage(from: hardwareConfig)
+        self.outputImage = Self.makeInitialImage(from: hardwareConfig)
         self.controlPanel = SoftPLCView(
             viewModel: viewModel,
             togglePLCState: togglePLCState,
@@ -81,9 +109,9 @@ open class SoftPLC: Loggable {
     public func setMaxCycleTime(_ newValue: TimeInterval) {
         guard newValue != viewModel.maxCycleTime else { return }
         viewModel.maxCycleTime = newValue
-		Task {
-			await backGroundCycle.setMaxCycleTime(newValue)
-		}
+        Task {
+            await backGroundCycle.setMaxCycleTime(newValue)
+        }
     }
     
     // MARK: - simulatedHardware & IO Failures
@@ -98,15 +126,15 @@ open class SoftPLC: Loggable {
     
     // MARK: - Hooks for IO-handling and the main loop
     public func readAllInputs() async {
-        if case .simulated(let withHardware) = viewModel.executionType, let simulatedHardware = self.simulatedHardware {
-				
-            do {
-                try await readAllModuleInputs(from: simulatedHardware)
-                await getModuleImages(from: simulatedHardware)
-            } catch {
-                await stop(reason: .ioFault)
-                return
-            }
+        
+        do {
+            try await readAllModuleInputs(from: activeHardwareConfig)
+        } catch {
+            await stop(reason: .ioFault)
+            return
+        }
+        
+        if simulatedHardware != nil, case .simulated(let withHardware) = viewModel.executionType {
             
 #if DEBUG
             if withHardware {
@@ -121,13 +149,6 @@ open class SoftPLC: Loggable {
             await backGroundCycle.resetNumberOfOverruns()
 #endif
             
-        } else {
-            do {
-                try await readAllModuleInputs(from: hardwareConfig)
-                await getModuleImages(from: hardwareConfig)
-            } catch {
-                await stop(reason: .ioFault)
-            }
         }
     }
     
@@ -140,20 +161,12 @@ open class SoftPLC: Loggable {
     }
     
     public func writeAllOutputs() async {
-        if case .simulated(_) = viewModel.executionType, let simulatedHardware = simulatedHardware {
-            do {
-                try await writeAllModuleOutputs(from: simulatedHardware)
-            } catch {
-                await stop(reason: .ioFault)
-            }
-        } else {
-            do {
-                try await writeAllModuleOutputs(from: hardwareConfig)
-            } catch {
-                await stop(reason: .ioFault)
-            }
-        }
         
+        do {
+            try await writeAllModuleOutputs(from: activeHardwareConfig)
+        } catch {
+            await stop(reason: .ioFault)
+        }
     }
     
     public func updateViewModel(with backgroundState: BackGroundCycle.State) {
@@ -176,42 +189,69 @@ open class SoftPLC: Loggable {
         }
     }
     
+    
+    // Get and Set signals in the IO-Images
     public func signal(ioSymbol: IOSymbol) -> PLCValue? {
+
         guard let ioVariable = variableList[ioSymbol] else { return nil }
-        
+
         guard ioVariable.address.count == 3 else { return nil }
-        
+
         let rackNumber = ioVariable.address[0]
-        let moduleNr = ioVariable.address[1]
+        let moduleNumber = ioVariable.address[1]
         let channelNumber = ioVariable.address[2]
-        
-        guard let ioRack = moduleImages[rackNumber], ioRack.indices.contains(moduleNr) else {
-            return nil
-        }
-        
-        let ioModuleImage = ioRack[moduleNr]
-        guard ioModuleImage.indices.contains(channelNumber) else {
-            return nil
-        }
-        
+        let ioRack = inputImage[rackNumber]!
+        let ioModuleImage = ioRack[moduleNumber]
         return ioModuleImage[channelNumber]
     }
     
-	// MARK: - Helper functions for both types of hardwareconfiguration
+    public func setOutputSignal(_ ioSignal: PLCValue, for ioSymbol: IOSymbol) {
+
+        guard let ioVariable = variableList[ioSymbol] else { return }
+        guard ioVariable.address.count == 3 else { return }
+        
+        let rackNumber = ioVariable.address[0]
+        let moduleNumber = ioVariable.address[1]
+        let channelNumber = ioVariable.address[2]
+                
+        var ioRack = outputImage[rackNumber]!
+                
+        var ioModuleImage = ioRack[moduleNumber]
+        ioModuleImage[channelNumber] = ioSignal
+        ioRack[moduleNumber] = ioModuleImage
+        outputImage[rackNumber] = ioRack
+    }
+    
+    // MARK: - Size the IO-Images to the correct size
+    private static func makeInitialImage(from hardwareConfig: HardwareConfiguration) -> [RackNumber: [PLCValues]] {
+        Dictionary(uniqueKeysWithValues: hardwareConfig.map { rackNumber, modules in
+            let moduleSnapshots = modules.map { module in
+                Array<PLCValue?>(repeating: nil, count: module.layout.channels.count)
+            }
+            return (rackNumber, moduleSnapshots)
+        })
+    }
+    
     private func readAllModuleInputs(from hardwareConfig: HardwareConfiguration) async throws {
         for rackNumber in hardwareConfig.keys.sorted() {
-            guard let ioRack = hardwareConfig[rackNumber] else { continue }
+            let ioRack = hardwareConfig[rackNumber]!
             
             for ioModule in ioRack {
                 try await ioModule.readInputChannels()
                 try await ioModule.readOutputChannels()
             }
         }
+        
+        await getInputImage(from: hardwareConfig)
+        
     }
     
     private func writeAllModuleOutputs(from hardwareConfig: HardwareConfiguration) async throws {
+        
+        await setOutputImage(at: hardwareConfig)
+        
         for rackNumber in hardwareConfig.keys.sorted() {
-            guard let ioRack = hardwareConfig[rackNumber] else { continue }
+            let ioRack = hardwareConfig[rackNumber]!
             
             for ioModule in ioRack {
                 try await ioModule.writeOutputChannels()
@@ -219,23 +259,44 @@ open class SoftPLC: Loggable {
         }
     }
     
-    private func getModuleImages(from hardwareConfig: HardwareConfiguration) async {
-        var updatedImages: [RackNumber: [PLCValues]] = [:]
+    // MARK: - Get en Set resulting IO-Images from and to the hardware
+    private func getInputImage(from hardwareConfig: HardwareConfiguration) async {
+        var plcInputImage: [RackNumber: [PLCValues]] = [:]
         
+        // Iterate through the IO-racks
         for rackNumber in hardwareConfig.keys.sorted() {
-            guard let ioRack = hardwareConfig[rackNumber] else { continue }
+            let ioRack = hardwareConfig[rackNumber]!
             
+            // Iterate through the IO-modules and append their image to the PLC's input image
             var ioRackImages: [PLCValues] = []
             for ioModule in ioRack {
-                let ioModuleImage = await ioModule.image
-                ioRackImages.append(ioModuleImage)
+                let snapshot = await ioModule.inputImage()
+                ioRackImages.append(snapshot)
             }
             
-            updatedImages[rackNumber] = ioRackImages
+            plcInputImage[rackNumber] = ioRackImages
         }
         
-        moduleImages = updatedImages
+        self.inputImage = plcInputImage
     }
+    
+    private func setOutputImage(at hardwareConfig: HardwareConfiguration) async {
+        
+        // Iterate through the IO-racks
+        for rackNumber in hardwareConfig.keys.sorted() {
+            let plcOutputRack = self.outputImage[rackNumber]!
+            let ioRack = hardwareConfig[rackNumber]!
+            
+            // Iterate through the PLC-modules and use their image as the snapshot for the IO
+            for (moduleIndex, plcModule) in plcOutputRack.enumerated() {
+                let snapshot = plcModule
+                let ioModule = ioRack[moduleIndex]
+                await ioModule.applyOutputImage(using: snapshot)
+            }
+        }
+        
+    }
+    
 }
 
 // MARK: Sendability

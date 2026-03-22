@@ -25,6 +25,7 @@ let package = Package(
 		.package(path: "~/Documents/Development/Projects/Personal/Xcode/HomeAutomation/Drivers/MoxaDriver"),
 		.package(path: "~/Documents/Development/Projects/Personal/Xcode/JVSwift/JVSwiftCore"),
 		.package(url: "https://github.com/TheMisfit68/JVNetworking.git", branch: "main"),
+			.package(url: "https://github.com/swift-server-community/mqtt-nio.git", branch: "main"),
 		.package(url: "https://github.com/apple/swift-docc-plugin", from: "1.3.0"),
 	],
 	targets: [
@@ -37,6 +38,7 @@ let package = Package(
 				"MoxaDriver",
 				"JVSwiftCore",
 				"JVNetworking",
+					.product(name: "MQTTNIO", package: "mqtt-nio"),
 			],
 			resources: [.process("Resources")],
 			swiftSettings: strictConcurrencySettings
