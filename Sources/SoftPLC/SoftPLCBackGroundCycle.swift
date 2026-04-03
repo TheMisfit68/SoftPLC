@@ -50,7 +50,6 @@ extension SoftPLC {
         }
         
         private func cycleLoop(within plc: SoftPLC, with config: SoftPLC.PLCConfiguration) async {
-            
             self.maxNumberOfOverruns = config.maxNumberOfOverruns
             self.maxCycleTime = config.maxCycleTime
 
@@ -63,7 +62,7 @@ extension SoftPLC {
                 await plc.writeAllOutputs()
                 
                 let cycleEnd = Timestamp.currentTimestamp
-                self.cycleTimeInMiliSeconds = cycleEnd - cycleStart
+				self.cycleTimeInMiliSeconds = (cycleEnd - cycleStart)*1000.0
                 
                 let currentState = State(
                     runState: self.runState,
@@ -72,8 +71,9 @@ extension SoftPLC {
                 await plc.updateViewModel(with: currentState)
                 
                 monitorCycletime(self.cycleTimeInMiliSeconds)
-                
+				
                 await Task.yield()
+
             }
 
         }

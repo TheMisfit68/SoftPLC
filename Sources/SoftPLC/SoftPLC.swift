@@ -130,7 +130,7 @@ open class SoftPLC: Loggable {
         do {
             try await readAllModuleInputs(from: activeHardwareConfig)
         } catch {
-            await stop(reason: .ioFault)
+		    await stop(reason: .ioFault)
             return
         }
         
@@ -165,7 +165,7 @@ open class SoftPLC: Loggable {
         do {
             try await writeAllModuleOutputs(from: activeHardwareConfig)
         } catch {
-            await stop(reason: .ioFault)
+//            await stop(reason: .ioFault)
         }
     }
     
@@ -235,13 +235,12 @@ open class SoftPLC: Loggable {
     private func readAllModuleInputs(from hardwareConfig: HardwareConfiguration) async throws {
         for rackNumber in hardwareConfig.keys.sorted() {
             let ioRack = hardwareConfig[rackNumber]!
-            
             for ioModule in ioRack {
-                try await ioModule.readInputChannels()
+				try await ioModule.readInputChannels()
+				
                 try await ioModule.readOutputChannels()
             }
         }
-        
         await getInputImage(from: hardwareConfig)
         
     }
@@ -252,9 +251,13 @@ open class SoftPLC: Loggable {
         
         for rackNumber in hardwareConfig.keys.sorted() {
             let ioRack = hardwareConfig[rackNumber]!
-            
+
             for ioModule in ioRack {
+				
+
                 try await ioModule.writeOutputChannels()
+				
+				
             }
         }
     }
