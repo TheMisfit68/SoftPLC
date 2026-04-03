@@ -63,7 +63,7 @@ extension SoftPLC {
                 await plc.writeAllOutputs()
                 
                 let cycleEnd = Timestamp.currentTimestamp
-                self.cycleTimeInMiliSeconds = cycleEnd - cycleStart
+				self.cycleTimeInMiliSeconds = (cycleEnd - cycleStart)*1000.0
                 
                 let currentState = State(
                     runState: self.runState,
